@@ -29,7 +29,7 @@ const _cv = document.createElement('canvas').getContext('2d');
 function measure(text, size, fam = 'Unbounded', weight = 900) {
   _cv.font = `${weight} ${size}px ${fam}`; return _cv.measureText(text).width;
 }
-const FAM = { U: 'Unbounded', R: 'Rubik' };
+const FAM = { U: 'Unbounded', R: 'Rubik', H: 'Caveat' };
 
 // ===== typography =====
 // segs: string or [{t, c}] ; draws text with thick ink outline + hard drop shadow
@@ -147,7 +147,7 @@ function moneyCard(v, { x, y, sc = 1, op = 1, flash = 0 }) {
    ${flash ? `<rect width="${w}" height="${h}" rx="20" fill="#fff" opacity="${flash}"/>` : ''}
   </g>`;
 }
-function timerCard(days, { x, y, sc = 1, op = 1, pulse = 0, t = 0 }) {
+function timerCard(days, { x, y, sc = 1, op = 1, pulse = 0, t = 0, flip = 1 }) {
   const w = HUD.timer.w, h = HUD.timer.h;
   const segs = [0, 1, 2].map(i => {
     const on = i < days;
@@ -160,7 +160,7 @@ function timerCard(days, { x, y, sc = 1, op = 1, pulse = 0, t = 0 }) {
    <circle cx="30" cy="30" r="7" fill="${C.red}" opacity="${.35 + .65 * (Math.sin(t * 6) > -.2)}"/>
    <text x="46" y="30" dy="0.36em" font-family="Rubik" font-weight="800" font-size="17" letter-spacing="1.5" fill="#fff">ДО РЕЛИЗА GTA 6</text>
    ${segs}
-   <g transform="translate(${w - 108},12)"><rect width="94" height="68" rx="14" fill="${C.yel}" stroke="${C.ink}" stroke-width="4"/>
+   <g transform="translate(${w - 108},12)"><g transform="translate(47,34) scale(1,${flip < 1 ? Math.abs(Math.cos(flip * Math.PI)) : 1}) translate(-47,-34)"><rect width="94" height="68" rx="14" fill="${flip < 1 && flip > 0 ? C.red : C.yel}" stroke="${C.ink}" stroke-width="4"/></g>
    <text x="34" y="35" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="42" fill="${C.ink}">${days}</text>
    <text x="72" y="35" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="15" fill="${C.ink}">ДНЯ</text></g>
   </g>`;
@@ -173,8 +173,12 @@ function head(o) {
   const e = { eyes: 'open', brow: 'flat', mouth: 'line', open: 0, look: [0, 0], ...o.e };
   const id = uid('hc');
   let hair = '';
-  if (kind === 'hero' || kind === 'colA' || kind === 'colB') {
-    const col = kind === 'hero' ? C.hair : kind === 'colA' ? '#d8743c' : '#2c2930';
+  const HAIR = { hero: C.hair, colA: '#d8743c', colB: '#2c2930', tyoma: '#a86b3c', dad: '#3a302b', kid: '#e9c45a', granny: '#c9c8d2', hood: '#2b2932' };
+  let back = '';
+  if (kind === 'granny') back = `<circle cx="0" cy="${-1.02 * r}" r="${.32 * r}" fill="${HAIR.granny}" stroke="${C.ink}" stroke-width="${.06 * r}"/>`;
+  if (kind === 'hood') back = `<path d="M${-1.22 * r} ${.5 * r} Q${-1.3 * r} ${-1.3 * r} 0 ${-1.3 * r} Q${1.3 * r} ${-1.3 * r} ${1.22 * r} ${.5 * r} L${.9 * r} ${1.0 * r} H${-.9 * r}Z" fill="#2b2932" stroke="${C.ink}" stroke-width="${.07 * r}"/>`;
+  if (HAIR[kind] && kind !== 'boss') {
+    const col = HAIR[kind];
     hair = `<path clip-path="url(#${id})" fill="${col}" d="M${-1.3 * r} ${-1.3 * r} H${1.3 * r} V${.1 * r} L${.9 * r} ${.1 * r} Q${.86 * r} ${-.36 * r} ${.38 * r} ${-.36 * r} Q${.05 * r} ${-.5 * r} ${-.28 * r} ${-.32 * r} Q${-.8 * r} ${-.36 * r} ${-.9 * r} ${.1 * r} L${-1.3 * r} ${.1 * r}Z" stroke="${C.ink}" stroke-width="4"/>`;
   } else if (kind === 'boss') {
     hair = `<g clip-path="url(#${id})" fill="#b4b3bd" stroke="${C.ink}" stroke-width="4">
@@ -238,10 +242,12 @@ function head(o) {
   const extra = (e.blush ? `<ellipse cx="${-.58 * r}" cy="${.3 * r}" rx="${.14 * r}" ry="${.07 * r}" fill="${C.blush}" opacity=".8"/><ellipse cx="${.58 * r}" cy="${.3 * r}" rx="${.14 * r}" ry="${.07 * r}" fill="${C.blush}" opacity=".8"/>` : '') +
     (e.sweat ? `<path d="M${.78 * r} ${-.35 * r} q${.1 * r} ${.18 * r} 0 ${.24 * r} q${-.1 * r} ${-.06 * r} 0 ${-.24 * r}z" fill="#6cc4ff" stroke="${C.ink}" stroke-width="3"/>` : '');
   return `<g transform="translate(${x},${y}) scale(${flip ? -1 : 1},1)">
-    <clipPath id="${id}"><circle r="${r}"/></clipPath>
-    <circle r="${r}" fill="#fff"/>${hair}
+    <clipPath id="${id}"><circle r="${r}"/></clipPath>${back}
+    <circle r="${r}" fill="${kind === 'hood' ? '#e4e3ea' : '#fff'}"/>${hair}
     <circle r="${r}" fill="none" stroke="${C.ink}" stroke-width="${.075 * r}"/>
     ${eye(-ex)}${eye(ex)}${brow(-ex, -1)}${brow(ex, 1)}${mouth}${extra}
+    ${kind === 'tyoma' ? `<g fill="#fff" fill-opacity=".25" stroke="${C.ink}" stroke-width="${.05 * r}"><rect x="${-ex - .25 * r}" y="${ey - .2 * r}" width="${.5 * r}" height="${.38 * r}" rx="${.12 * r}"/><rect x="${ex - .25 * r}" y="${ey - .2 * r}" width="${.5 * r}" height="${.38 * r}" rx="${.12 * r}"/></g><path d="M${-ex + .25 * r} ${ey - .04 * r} H${ex - .25 * r}" stroke="${C.ink}" stroke-width="${.05 * r}"/>` : ''}
+    ${kind === 'dad' ? `<path d="M${-.26 * r} ${.36 * r} Q${-.13 * r} ${.24 * r} 0 ${.32 * r} Q${.13 * r} ${.24 * r} ${.26 * r} ${.36 * r} Q${.13 * r} ${.4 * r} 0 ${.36 * r} Q${-.13 * r} ${.4 * r} ${-.26 * r} ${.36 * r}Z" fill="#3a302b" stroke="${C.ink}" stroke-width="3"/>` : ''}
   </g>`;
 }
 
@@ -249,8 +255,9 @@ function head(o) {
 function person(o) {
   const { x = 0, y = 0, r = 60, kind = 'hero', pose = 'stand', legs = true, walk = 0, sc = 1, flip = false, rot = 0 } = o;
   const isBoss = kind === 'boss';
-  const body = isBoss ? C.boss : kind === 'hero' ? C.jacket : kind === 'colA' ? '#4f7fb8' : '#8a5aa8';
-  const bodyD = isBoss ? '#232a40' : C.jacketD;
+  const BODY = { boss: C.boss, hero: C.jacket, colA: '#4f7fb8', colB: '#8a5aa8', tyoma: '#8db6e6', hood: '#2b2932', dad: '#d8453c', kid: '#f2c53d', granny: '#7a5a8a' };
+  const body = o.bodyCol || BODY[kind] || C.jacket;
+  const bodyD = isBoss ? '#232a40' : kind === 'hero' ? C.jacketD : 'rgba(0,0,0,.18)';
   const tw = 1.0 * r, ty = .78 * r, th = 1.75 * r;
   const lg = walk ? Math.sin(walk) * .18 * r : 0;
   const legsS = legs ? `<g fill="${C.pants}" stroke="${C.ink}" stroke-width="4">
@@ -261,6 +268,8 @@ function person(o) {
   let detail;
   if (isBoss) detail = `<path d="M${-.3 * r} ${ty - 2} L0 ${ty + .75 * r} L${.3 * r} ${ty - 2}Z" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
      <path d="M${-.08 * r} ${ty + .1 * r} L${.08 * r} ${ty + .1 * r} L${.1 * r} ${ty + .62 * r} L0 ${ty + .74 * r} L${-.1 * r} ${ty + .62 * r}Z" fill="${C.tie}" stroke="${C.ink}" stroke-width="3.5"/>`;
+  else if (kind === 'hood') detail = `<path d="M${-.15 * r} ${ty + .1 * r} v${.5 * r} M${.15 * r} ${ty + .1 * r} v${.5 * r}" stroke="#eee" stroke-width="4" stroke-linecap="round"/><rect x="${-.6 * r}" y="${ty + 1.0 * r}" width="${1.2 * r}" height="${.4 * r}" rx="10" fill="#232129" stroke="${C.ink}" stroke-width="3"/>`;
+  else if (kind !== 'hero') detail = '';
   else detail = `<path d="M0 ${ty + .2 * r} V${ty + th - 6}" stroke="${bodyD}" stroke-width="4" stroke-dasharray="7 6"/>
      <path d="M${-.42 * r} ${ty} L0 ${ty + .32 * r} L${.42 * r} ${ty}" fill="${bodyD}" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"/>
      <rect x="${.48 * r}" y="${ty + .45 * r}" width="${.16 * r}" height="${.07 * r}" rx="3" fill="${C.yel}" stroke="${C.ink}" stroke-width="2"/>`;
@@ -287,6 +296,15 @@ function person(o) {
   } else if (pose === 'mug') {
     arms = arm(-1, -tw * 1.05, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, tw * .55, ty + .1 * r, tw * 1.35, ty + .9 * r);
     front = hand(-tw * 1.05, ty + 1.45 * r) + mug(tw * .55 + .25 * r, ty - .05 * r, r * .9) + hand(tw * .55, ty + .1 * r);
+  } else if (pose === 'ear') {
+    arms = arm(-1, -tw * 1.05, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, .75 * r, -.05 * r, tw * 1.4, ty + .6 * r);
+    front = hand(-tw * 1.05, ty + 1.45 * r) + `<rect x="${.55 * r}" y="${-.55 * r}" width="${.3 * r}" height="${.62 * r}" rx="8" fill="${C.ink}" transform="rotate(25 ${.7 * r} ${-.2 * r})"/>` + hand(.75 * r, -.05 * r);
+  } else if (pose === 'wide') {
+    arms = arm(-1, -tw * 1.9, ty + .3 * r, -tw * 1.5, ty + .1 * r) + arm(1, tw * 1.9, ty + .3 * r, tw * 1.5, ty + .1 * r);
+    front = hand(-tw * 1.9, ty + .3 * r) + hand(tw * 1.9, ty + .3 * r);
+  } else if (pose === 'up') {
+    arms = arm(-1, -tw * 1.05, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, tw * 1.1, -1.4 * r, tw * 1.4, ty * .2);
+    front = hand(-tw * 1.05, ty + 1.45 * r) + hand(tw * 1.1, -1.4 * r);
   } else if (pose === 'phone') {
     arms = arm(-1, -.15 * r, ty + .35 * r, -tw * 1.1, ty + 1.2 * r) + arm(1, .3 * r, ty + .35 * r, tw * 1.1, ty + 1.2 * r);
     front = '';
