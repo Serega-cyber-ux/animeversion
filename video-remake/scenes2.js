@@ -631,84 +631,77 @@ const T29 = { s: 255.2, e: 265.3, draw(t) { // day 2, empty club
   }
   return out;
 } };
-// ---------- final choice: an RPG decision screen ----------
+// ---------- final choice: strategic decision screen ----------
+const OWN = 785;
 const CHOICES = [
-  { L: 'A', col: '#3D7BFF', title: 'Реклама в интернете', sub: 'соцсети и чаты района', cost: 50, a: 267.6, b: 270.9,
-    pro: 'Быстро: увидят сотни соседей', con: 'Минус $50 из последних денег', icon: 'phone' },
-  { L: 'Б', col: '#F29A2E', title: 'Листовки по подъездам', sub: 'печать и раздача самому', cost: 20, a: 271.0, b: 272.9,
-    pro: 'Дёшево: всего $20', con: 'Целый день на ногах, отклик неясен', icon: 'flyer' },
-  { L: 'В', col: '#2ED47A', title: 'Позвать друзей', sub: 'и знакомых, бесплатно', cost: 0, a: 273.0, b: 275.5,
-    pro: 'Бесплатно: $0', con: 'Друзья захотят играть даром', icon: 'friends' }];
-function choiceIcon(kind) {
-  if (kind === 'phone') return `<rect x="-17" y="-28" width="34" height="56" rx="8" fill="#fff" stroke="${C.ink}" stroke-width="4"/><rect x="-11" y="-20" width="22" height="30" rx="3" fill="#3D7BFF"/><circle cy="18" r="3" fill="${C.ink}"/>`;
-  if (kind === 'flyer') return `<g transform="rotate(-8)"><rect x="-22" y="-28" width="44" height="56" rx="4" fill="#fff" stroke="${C.ink}" stroke-width="4"/><rect x="-14" y="-18" width="28" height="10" fill="#F29A2E"/><rect x="-14" y="-2" width="28" height="4" fill="#cfcdd6"/><rect x="-14" y="8" width="20" height="4" fill="#cfcdd6"/></g>`;
-  return `${head({ x: -12, y: 2, r: 15, kind: 'colA', e: { eyes: 'happy', mouth: 'smile' } })}${head({ x: 13, y: 6, r: 15, kind: 'colB', e: { eyes: 'happy', mouth: 'smile' } })}`;
+  { L: 'A', col: '#3D7BFF', title: 'Реклама в соцсетях', sub: 'таргет на район, 2 дня', cost: 300, costLbl: '−$300',
+    pro: 'Увидят тысячи до релиза', con: 'Платишь за показы, не за гостей', icon: 'ads', a: 267.6, b: 270.9 },
+  { L: 'Б', col: '#F29A2E', title: 'Ищешь клиентов сам', sub: 'колледжи, дворы, знакомые', cost: 40, costLbl: '−$40',
+    pro: 'Живые знакомства — свои люди', con: '2 дня до релиза — на улице', icon: 'walk', a: 271.0, b: 272.9 },
+  { L: 'В', col: '#2ED47A', title: 'Ночь релиза бесплатно', sub: 'первый час — даром', cost: 0, costLbl: '$0', costSub: 'сейчас',
+    pro: 'Очередь в ночь релиза', con: 'Выручки почти ноль', icon: 'gift', a: 273.0, b: 275.5 }];
+function choiceIcon(kind, col) {
+  const bg = `<circle r="34" fill="#fff" stroke="${C.ink}" stroke-width="4"/>`;
+  if (kind === 'ads') return bg + `<path d="M-18 -6 h8 l16 -12 v36 l-16 -12 h-8z" fill="${col}" stroke="${C.ink}" stroke-width="3.5" stroke-linejoin="round"/><rect x="-14" y="6" width="7" height="12" rx="2" fill="${C.ink}"/><path d="M12 -8 q6 8 0 16 M17 -14 q11 14 0 28" fill="none" stroke="${C.ink}" stroke-width="3.5" stroke-linecap="round"/>`;
+  if (kind === 'walk') return bg + `<path d="M-6 18 l6 -14 l8 6 v12 M0 4 l-4 -10 l10 -4 l6 8 l8 2" fill="none" stroke="${C.ink}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="-18" r="6" fill="${col}" stroke="${C.ink}" stroke-width="3"/><rect x="-22" y="-14" width="12" height="16" rx="2" fill="#fff" stroke="${C.ink}" stroke-width="3"/>`;
+  return bg + `<rect x="-18" y="-6" width="36" height="24" rx="3" fill="${col}" stroke="${C.ink}" stroke-width="3.5"/><rect x="-21" y="-14" width="42" height="10" rx="3" fill="${col}" stroke="${C.ink}" stroke-width="3.5"/><rect x="-3" y="-14" width="6" height="32" fill="#fff" stroke="${C.ink}" stroke-width="2.5"/><path d="M0 -14 q-14 -14 -14 -4 q0 6 14 4 q14 2 14 -4 q0 -10 -14 4" fill="none" stroke="${C.ink}" stroke-width="3"/>`;
 }
-const T30 = { s: 265.3, e: 281.0, draw(t) { // poll
-  const OWN = 785;
-  const cta = t >= 276.3;
+const T30 = { s: 265.3, e: 281.0, draw(t) {
   const active = CHOICES.findIndex(c => win(t, c.a, c.b + .1));
-  let s = `<rect x="-400" y="-400" width="1520" height="2080" fill="#120f22"/>` + stripesBG(t, '#120f22', '#17132c');
-  // soft spotlight + scan grid for a "game menu" feel
-  s += `<defs><radialGradient id="pg" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#3b2e7a" stop-opacity=".55"/><stop offset="1" stop-color="#120f22" stop-opacity="0"/></radialGradient></defs><rect width="720" height="1280" fill="url(#pg)"/>`;
+  const cta = t >= 276.3;
+  let s = `<rect x="-400" y="-400" width="1520" height="2080" fill="#110d22"/>` + stripesBG(t, '#110d22', '#161130') +
+    `<defs><radialGradient id="pg" cx=".5" cy=".38" r=".65"><stop offset="0" stop-color="#4b33a8" stop-opacity=".55"/><stop offset="1" stop-color="#110d22" stop-opacity="0"/></radialGradient></defs><rect width="720" height="1280" fill="url(#pg)"/>`;
+  // floating dust
+  for (let i = 0; i < 18; i++) { const x = (i * 97 + t * (8 + i % 5) * 3) % 760 - 20, y = (i * 173 + t * 12) % 1280; s += `<circle cx="${x}" cy="${1280 - y}" r="${1.5 + i % 3}" fill="#fff" opacity="${.08 + .04 * (i % 4)}"/>`; }
   // header
   const hk = eOut(P(t, 265.35, .4));
-  s += `<g opacity="${hk}" transform="translate(0,${(1 - hk) * -30})">
-    <g transform="translate(360,150)"><rect x="-175" y="-22" width="350" height="44" rx="22" fill="${C.yel}" stroke="${C.ink}" stroke-width="4"/>
-    <text text-anchor="middle" dy="0.36em" font-family="Rubik" font-weight="900" font-size="19" letter-spacing="3" fill="${C.ink}">ТВОЙ ВЫБОР · СЕРИЯ 2</text></g></g>`;
-  s += KT(t, 265.4, 290, 'КАК НАЙТИ', { x: 360, y: 225, size: 46, rot: -2 }, 'drop') + KT(t, 265.7, 290, [{ t: 'ПЕРВЫХ КЛИЕНТОВ?', c: C.yel }], { x: 360, y: 295, size: 40, rot: 1 }, 'drop');
-  // budget meter
+  s += `<g opacity="${hk}" transform="translate(360,${120 - (1 - hk) * 30})"><rect x="-170" y="-22" width="340" height="44" rx="22" fill="${C.yel}" stroke="${C.ink}" stroke-width="4"/>
+    <text text-anchor="middle" dy="0.36em" font-family="Rubik" font-weight="900" font-size="19" letter-spacing="3" fill="${C.ink}">ТВОЙ ВЫБОР · СЕРИЯ 2</text></g>`;
+  s += KT(t, 265.4, 290, 'КАК НАЙТИ', { x: 360, y: 192, size: 48, rot: -2 }, 'drop') + KT(t, 265.7, 290, [{ t: 'ПЕРВЫХ КЛИЕНТОВ?', c: C.yel }], { x: 360, y: 260, size: 40, rot: 1 }, 'drop');
+  // situation strip: money / debt / days / clients
   const bk = eOut(P(t, 266.0, .4));
+  const stat = (x, lbl, val, col) => `<g transform="translate(${x},0)"><text text-anchor="middle" y="-14" dy="0.36em" font-family="Rubik" font-weight="800" font-size="15" letter-spacing="1.5" fill="#a9a5b8">${lbl}</text><text text-anchor="middle" y="16" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="26" fill="${col}">${val}</text></g>`;
   const cost = active >= 0 ? CHOICES[active].cost : 0;
-  const after = OWN - cost;
-  s += `<g transform="translate(40,${352 + (1 - bk) * 20})" opacity="${bk}">
-    <text x="0" y="0" dy="0.36em" font-family="Rubik" font-weight="800" font-size="18" letter-spacing="2" fill="#a9a5b8">СВОИХ ДЕНЕГ</text>
-    <text x="640" y="0" dy="0.36em" text-anchor="end" font-family="Unbounded" font-weight="900" font-size="22" fill="${cost ? C.red : '#fff'}">${cost ? `$${OWN} → $${after}` : `$${OWN}`}</text>
-    <rect x="0" y="20" width="640" height="16" rx="8" fill="#2a2638"/><rect x="0" y="20" width="${640 * after / 1000}" height="16" rx="8" fill="${C.grn}"/>
-    ${cost ? `<rect x="${640 * after / 1000}" y="20" width="${640 * cost / 1000}" height="16" fill="${C.red}" opacity="${.6 + .4 * Math.sin(t * 10)}"/>` : ''}
-    <rect x="${640 * .785}" y="14" width="3" height="28" fill="#fff" opacity=".0"/></g>`;
+  s += `<g transform="translate(36,${312 + (1 - bk) * 20})" opacity="${bk}"><rect width="648" height="70" rx="18" fill="#1d1835" stroke="#2f2852" stroke-width="3"/>
+    <g transform="translate(0,35)">${stat(92, 'СВОИХ', cost ? '$' + (OWN - cost) : '$' + OWN, cost ? C.red : '#fff')}${stat(250, 'ДОЛГ', '$1000', C.red)}${stat(400, 'ДО РЕЛИЗА', '2 ДНЯ', C.yel)}${stat(560, 'КЛИЕНТЫ', '0', '#fff')}</g>
+    <rect x="164" y="16" width="2" height="38" fill="#2f2852"/><rect x="330" y="16" width="2" height="38" fill="#2f2852"/><rect x="478" y="16" width="2" height="38" fill="#2f2852"/></g>`;
   // cards
+  const W = 648, H = 200;
   CHOICES.forEach((c, i) => {
     const k = eBack(P(t, 266.4 + i * .2, .45)); if (k <= 0) return;
     const act = i === active, dimmed = active >= 0 && !act;
-    const y = 480 + i * 192;
-    const sc = act ? 1.04 : dimmed ? .96 : 1;
-    const shine = act ? ((t - c.a) * 1.2) % 1 : -1;
-    const w = 640, h = 176;
-    s += `<g transform="translate(${lerp(-420, 360, k)},${y}) scale(${sc}) rotate(${act ? -1 : 0})" opacity="${dimmed ? .5 : 1}">
-      ${act ? `<rect x="${-w / 2 - 10}" y="${-h / 2 - 10}" width="${w + 20}" height="${h + 20}" rx="34" fill="none" stroke="${c.col}" stroke-width="6" opacity="${.5 + .5 * Math.sin(t * 8)}"/>` : ''}
-      <rect x="${-w / 2 + 6}" y="${-h / 2 + 8}" width="${w}" height="${h}" rx="28" fill="${C.ink}"/>
-      <rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="28" fill="#fff" stroke="${C.ink}" stroke-width="5"/>
-      <path d="M${-w / 2} ${-h / 2 + 28} a28 28 0 0 1 28 -28 h92 v${h} h-92 a28 28 0 0 1 -28 -28z" fill="${c.col}" stroke="${C.ink}" stroke-width="5"/>
-      <text x="${-w / 2 + 60}" y="-26" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="60" fill="#fff" stroke="${C.ink}" stroke-width="7" paint-order="stroke">${c.L}</text>
-      <g transform="translate(${-w / 2 + 60},48)">${choiceIcon(c.icon)}</g>
-      <text x="${-w / 2 + 140}" y="-50" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="22" fill="${C.ink}">${c.title}</text>
-      <text x="${-w / 2 + 140}" y="-18" dy="0.36em" font-family="Rubik" font-weight="700" font-size="19" fill="#8a8796">${c.sub}</text>
-      <g transform="translate(${w / 2 - 20},-50)"><rect x="-96" y="-22" width="96" height="44" rx="12" fill="${c.cost ? '#ffe3e6' : '#dcf8e9'}" stroke="${C.ink}" stroke-width="3"/>
-        <text x="-48" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="22" fill="${c.cost ? C.red : '#1f8a4c'}">${c.cost ? '−$' + c.cost : '$0'}</text></g>
-      <g transform="translate(${-w / 2 + 140},22)"><circle cx="11" cy="0" r="11" fill="${C.grn}"/><path d="M5 0 l4 5 l8 -9" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <text x="32" dy="0.36em" font-family="Rubik" font-weight="800" font-size="21" fill="#1f6a3e">${c.pro}</text></g>
-      <g transform="translate(${-w / 2 + 140},58)"><circle cx="11" cy="0" r="11" fill="${C.red}"/><path d="M6 0 h10" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
-        <text x="32" dy="0.36em" font-family="Rubik" font-weight="800" font-size="21" fill="#a3283a">${c.con}</text></g>
-      ${shine >= 0 ? `<rect x="${-w / 2 + (w + 120) * shine - 60}" y="${-h / 2}" width="50" height="${h}" fill="#fff" opacity=".22" transform="skewX(-18)"/>` : ''}
+    const y = 506 + i * 222;
+    const sc = act ? 1.03 : dimmed ? .97 : 1;
+    const shine = act ? ((t - c.a) * 1.1) % 1 : -1;
+    s += `<g transform="translate(${lerp(-460, 360, k)},${y}) scale(${sc})" opacity="${dimmed ? .45 : 1}">
+      ${act ? `<rect x="${-W / 2 - 9}" y="${-H / 2 - 9}" width="${W + 18}" height="${H + 18}" rx="34" fill="none" stroke="${c.col}" stroke-width="6" opacity="${.55 + .45 * Math.sin(t * 8)}"/>` : ''}
+      <rect x="${-W / 2 + 6}" y="${-H / 2 + 8}" width="${W}" height="${H}" rx="28" fill="${C.ink}"/>
+      <rect x="${-W / 2}" y="${-H / 2}" width="${W}" height="${H}" rx="28" fill="#fff" stroke="${C.ink}" stroke-width="5"/>
+      <path d="M${-W / 2} ${-H / 2 + 28} a28 28 0 0 1 28 -28 h${W - 56} a28 28 0 0 1 28 28 v58 h${-W}z" fill="${c.col}" stroke="${C.ink}" stroke-width="5"/>
+      <g transform="translate(${-W / 2 + 44},${-H / 2 + 43})"><circle r="27" fill="${C.ink}"/><text dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="30" fill="#fff">${c.L}</text></g>
+      <text x="${-W / 2 + 86}" y="${-H / 2 + 30}" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="25" fill="#fff" stroke="${C.ink}" stroke-width="5" paint-order="stroke">${c.title}</text>
+      <text x="${-W / 2 + 86}" y="${-H / 2 + 62}" dy="0.36em" font-family="Rubik" font-weight="800" font-size="19" fill="#fff" opacity=".92">${c.sub}</text>
+      <g transform="translate(${W / 2 - 22},${-H / 2 + 43})"><rect x="-118" y="-27" width="118" height="54" rx="14" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
+        <text x="-59" y="${c.costSub ? -6 : 0}" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="${c.costSub ? 22 : 25}" fill="${c.cost ? C.red : '#1f8a4c'}">${c.costLbl}</text>
+        ${c.costSub ? `<text x="-59" y="14" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="13" fill="#8a8796">${c.costSub}</text>` : ''}</g>
+      <g transform="translate(${-W / 2 + 62},${H / 2 - 56})">${choiceIcon(c.icon, c.col)}</g>
+      <g transform="translate(${-W / 2 + 120},${H / 2 - 78})"><rect x="0" y="-15" width="30" height="30" rx="9" fill="${C.grn}"/><path d="M8 0 l5 6 l10 -11" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="42" dy="0.36em" font-family="Rubik" font-weight="800" font-size="23" fill="#1c6b3e">${c.pro}</text></g>
+      <g transform="translate(${-W / 2 + 120},${H / 2 - 34})"><rect x="0" y="-15" width="30" height="30" rx="9" fill="${C.red}"/><path d="M9 -6 l12 12 M21 -6 l-12 12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+        <text x="42" dy="0.36em" font-family="Rubik" font-weight="800" font-size="23" fill="#a3283a">${c.con}</text></g>
+      ${shine >= 0 ? `<rect x="${-W / 2 + (W + 140) * shine - 70}" y="${-H / 2}" width="54" height="${H}" fill="#fff" opacity=".2" transform="skewX(-18)"/>` : ''}
     </g>`;
   });
-  // call to action
+  // CTA
   if (cta) {
-    const k = eBack(P(t, 276.3, .4)), pulse = 1 + .035 * Math.sin(t * 7);
-    s += `<g transform="translate(360,1050) scale(${k * pulse})">
-      <rect x="-300" y="-54" width="610" height="116" rx="58" fill="${C.ink}"/><rect x="-306" y="-60" width="610" height="116" rx="58" fill="${C.yel}" stroke="${C.ink}" stroke-width="6"/>
-      <g transform="translate(-235,-2)"><path d="M-26 -20 h52 a10 10 0 0 1 10 10 v26 a10 10 0 0 1 -10 10 h-30 l-14 12 v-12 h-8 a10 10 0 0 1 -10 -10 v-26 a10 10 0 0 1 10 -10z" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
-        <circle cx="-12" cy="3" r="4" fill="${C.ink}"/><circle cx="2" cy="3" r="4" fill="${C.ink}"/><circle cx="16" cy="3" r="4" fill="${C.ink}"/></g>
-      <text x="40" y="-16" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="27" fill="${C.ink}">ПИШИ А, Б ИЛИ В</text>
-      <text x="40" y="22" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="20" letter-spacing="2" fill="${C.ink}" opacity="${P(t, 277.2, .3)}">В КОММЕНТАРИЯХ</text></g>`;
-    // the letters fly in like votes
-    ['A', 'Б', 'В'].forEach((L, i) => {
-      const vk = P(t, 277.6 + i * .25, 1.4); if (vk <= 0 || vk >= 1) return;
-      s += `<g transform="translate(${180 + i * 180},${lerp(1000, 430 + i * 192, eOut(vk))}) scale(${1 - .4 * vk})" opacity="${1 - vk}"><circle r="24" fill="${CHOICES[i].col}" stroke="${C.ink}" stroke-width="4"/><text dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="22" fill="#fff">${L}</text></g>`;
-    });
+    const k = eBack(P(t, 276.3, .4)), pulse = 1 + .03 * Math.sin(t * 7);
+    s += `<g transform="translate(360,1192) scale(${k * pulse})">
+      <rect x="-300" y="-44" width="610" height="96" rx="48" fill="${C.ink}"/><rect x="-306" y="-50" width="610" height="96" rx="48" fill="${C.yel}" stroke="${C.ink}" stroke-width="6"/>
+      <g transform="translate(-240,-2)"><path d="M-24 -18 h48 a10 10 0 0 1 10 10 v24 a10 10 0 0 1 -10 10 h-28 l-13 11 v-11 h-7 a10 10 0 0 1 -10 -10 v-24 a10 10 0 0 1 10 -10z" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
+        <circle cx="-11" cy="4" r="4" fill="${C.ink}"/><circle cx="2" cy="4" r="4" fill="${C.ink}"/><circle cx="15" cy="4" r="4" fill="${C.ink}"/></g>
+      <text x="36" y="-12" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="26" fill="${C.ink}">ПИШИ А, Б ИЛИ В</text>
+      <text x="36" y="20" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="17" letter-spacing="1.5" fill="${C.ink}" opacity="${P(t, 277.0, .3)}">ВЫБОР БОЛЬШИНСТВА ИЗМЕНИТ СЕРИЮ 2</text></g>`;
   }
-  s += KTag(t, 278.3, 290, 'СЛЕДУЮЩАЯ СЕРИЯ — ПО ВЫБОРУ БОЛЬШИНСТВА', { x: 360, y: 1150, size: 17, bg: '#fff', rot: -1 }, 'rise');
   return s;
 } };
 const T31 = { s: 281.0, e: 285.0, draw(t) { // end card
