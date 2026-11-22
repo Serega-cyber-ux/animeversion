@@ -5,13 +5,20 @@ const SCENES = [
   { ...S11, tin: 'whip' }, { ...S12, tin: 'flash' }, { ...S13, tin: 'whip' },
   ...PART2.map(([sc, tin]) => ({ ...sc, tin })),
 ];
-const CUT = [251.05, 254.35]; // removed narration line (seconds of source audio)
-const CUTLEN = CUT[1] - CUT[0];
-const srcT = t => (t < CUT[0] ? t : t + CUTLEN);
-const END = 284.85; // source end
+const END = 284.85; // end of the scene timeline (scene code uses this "story time")
+// Piecewise-linear map between story time (scene timings) and the new voiceover time.
+const KNOTS = (() => { const k = [[0, 0]]; (window.SEGMAP || []).forEach(([os, oe, ns, ne]) => { k.push([os, ns], [oe, ne]); }); k.push([END, window.NEWTOTAL || END]); return k; })();
+function pmap(t, from, to) {
+  const K = KNOTS; if (t <= K[0][from]) return K[0][to] + (t - K[0][from]);
+  for (let i = 1; i < K.length; i++) if (t <= K[i][from]) { const a = K[i - 1], b = K[i], d = b[from] - a[from]; return d <= 0 ? b[to] : a[to] + (t - a[from]) * (b[to] - a[to]) / d; }
+  const L = K[K.length - 1]; return L[to] + (t - L[from]);
+}
+const storyT = tNew => pmap(tNew, 1, 0);
+const voiceT = tStory => pmap(tStory, 0, 1);
+const FILM_LEN = window.NEWTOTAL || END;
 // money events: [time, delta]
-const MONEY = [[115.6, 1200], [174.3, -700], [179.9, -140], [199.3, -450], [206.0, -40]];
-function moneyAt(t) { return 3000 + MONEY.reduce((a, [t0, d]) => a + d * eOut(P(t, t0, .7)), 0); }
+const MONEY = [[115.6, 1000], [174.3, -900], [179.9, -160], [199.3, -510], [206.0, -45]];
+function moneyAt(t) { return 2400 + MONEY.reduce((a, [t0, d]) => a + d * eOut(P(t, t0, .7)), 0); }
 const hudOn = t => t >= 2.0 && t < 265.3;
 function overlays(t) {
   let s = '';
@@ -25,7 +32,7 @@ function overlays(t) {
     const x = lerp(360 - HUD.money.w * 2.1 / 2, HUD.money.x, d), y = lerp(640 - HUD.money.h * 2.1 / 2, HUD.y, d) + lift;
     const ev = MONEY.find(([t0]) => t >= t0 && t < t0 + 1.4);
     const [sx, sy] = ev ? shake(t, ev[0], .35, 8) : [0, 0];
-    s += moneyCard(moneyAt(t), { x: x + sx, y: y + sy, sc, flash: ev ? clamp(1 - (t - ev[0]) * 3) * .5 : 0 });
+    s += moneyCard(t < 2.4 ? 2400 : moneyAt(t), { x: x + sx, y: y + sy, sc, flash: ev ? clamp(1 - (t - ev[0]) * 3) * .5 : 0 });
     if (ev) { // flying delta chip
       const k = P(t, ev[0], 1.4), up = ev[1] > 0;
       s += tag((up ? '+$' : '−$') + Math.abs(ev[1]).toLocaleString('ru-RU').replace(/\s/g, ' '), { x: HUD.money.x + 360, y: HUD.y + 190 + 60 * eOut(k), size: 30, bg: up ? C.grn : C.red, fg: '#fff', rot: up ? -4 : 4, op: 1 - eIn(k), sc: eBack(clamp(k * 5)) });
@@ -35,7 +42,7 @@ function overlays(t) {
   if (t >= 120.3) {
     const k = eBack(P(t, 120.3, .4));
     s += `<g transform="translate(${HUD.money.x + 14},${HUD.y + HUD.money.h + 14 + lift}) scale(${k})"><rect x="3" y="4" width="214" height="40" rx="12" fill="${C.ink}"/><rect width="214" height="40" rx="12" fill="${C.red}" stroke="${C.ink}" stroke-width="3"/>
-      <text x="107" y="20" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="18" fill="#fff">ДОЛГ ТЁМЕ · $1 200</text></g>`;
+      <text x="107" y="20" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="18" fill="#fff">ДОЛГ ТЁМЕ · $1 000</text></g>`;
   }
   // release timer
   if (t >= 17.95) {

@@ -61,7 +61,7 @@ function stamp(t, t0, x, y, text, col = C.red, rot = -14, size = 34) {
 const S1 = {
   s: 0, e: 2.4, draw(t) {
     const k = eOut(P(t, .15, 1.35));
-    const val = Math.round(3000 * k / 10) * 10;
+    const val = Math.round(2400 * k / 10) * 10;
     const pop = eBack(P(t, 0, .35));
     const coins = [...Array(10)].map((_, i) => {
       const a = i * 2.4, sp = P(t, .2 + i * .08, 1.2);

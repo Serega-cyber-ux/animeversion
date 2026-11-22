@@ -177,9 +177,9 @@ const T1 = { s: 55.0, e: 59.5, draw(t) { // granny flat arrival
 } };
 const T2 = { s: 59.5, e: 65.0, draw(t) { // ledger day 1
   const z = lerp(1.06, 1.0, eOut(P(t, 59.5, .6)));
-  const sc = `<rect x="-400" y="-400" width="1520" height="2080" fill="#8d5a36"/>` + ledger(t, [{ t0: 61.0, l: 'Начало', v: '$3000' }], {});
+  const sc = `<rect x="-400" y="-400" width="1520" height="2080" fill="#8d5a36"/>` + ledger(t, [{ t0: 61.0, l: 'Начало', v: '$2400' }], {});
   return cam(sc, { z, cx: 360, cy: 600 }) + stamp(t, 61.6, 470, 760, 'ДЕНЬ 1', C.blue, -10, 44) +
-    KT(t, 62.3, 65.0, [{ t: '$3 000', c: C.grn }], { x: 360, y: 980, size: 72, rot: -3 }) + KT(t, 62.4, 65.0, 'НА СТАРТЕ', { x: 360, y: 900, size: 30, rot: -3, fill: '#fff' }, 'rise');
+    KT(t, 62.3, 65.0, [{ t: '$2 400', c: C.grn }], { x: 360, y: 980, size: 72, rot: -3 }) + KT(t, 62.4, 65.0, 'НА СТАРТЕ', { x: 360, y: 900, size: 30, rot: -3, fill: '#fff' }, 'rise');
 } };
 // Tyoma intro card
 function allyCard(t, t0, rows) {
@@ -206,7 +206,7 @@ const T3 = { s: 65.0, e: 73.5, draw(t) { // Tyoma's kitchen
   return out;
 } };
 const T4 = { s: 73.5, e: 81.0, draw(t) { // club shopping list
-  const items = [[74.6, 'PS5 б/у ×2', 700, 'console'], [76.5, 'GTA 6 ×2', 140, 'game'], [77.3, 'геймпад ×2', 150, 'pad'], [78.0, 'телевизор', 300, 'tv']];
+  const items = [[74.6, 'PS5 б/у ×2', 800, 'console'], [76.5, 'GTA 6 ×2', 160, 'game'], [77.3, 'геймпад ×2', 160, 'pad'], [78.0, 'телевизор', 350, 'tv']];
   let list = '';
   items.forEach(([t0, l, v, ic], i) => {
     if (t < t0) return;
@@ -217,7 +217,7 @@ const T4 = { s: 73.5, e: 81.0, draw(t) { // club shopping list
       <text x="110" y="50" dy="0.36em" font-family="Rubik" font-weight="800" font-size="30" fill="${C.ink}">${l}</text>
       <text x="556" y="50" dy="0.36em" text-anchor="end" font-family="Unbounded" font-weight="900" font-size="30" fill="${C.red}">$${v}</text></g>`;
   });
-  const tot = t >= 78.8 ? Math.round(1290 * eOut(P(t, 78.8, 1.2))) : 0;
+  const tot = t >= 78.8 ? Math.round(1470 * eOut(P(t, 78.8, 1.2))) : 0;
   const total = t >= 78.8 ? `<g transform="translate(360,960) scale(${eBack(P(t, 78.8, .3))}) rotate(-3)"><rect x="-224" y="-56" width="460" height="120" rx="22" fill="${C.ink}"/><rect x="-230" y="-62" width="460" height="120" rx="22" fill="${C.yel}" stroke="${C.ink}" stroke-width="6"/>
      <text x="-200" y="0" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="28" fill="${C.ink}">ИТОГО</text><text x="200" y="0" dy="0.36em" text-anchor="end" font-family="Unbounded" font-weight="900" font-size="52" fill="${C.ink}">$${tot.toLocaleString('ru-RU').replace(/\s/g, ' ')}</text></g>` : '';
   return stripesBG(t, '#173a2a', '#1d4633') + `<text x="360" y="320" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="40" fill="#fff" stroke="${C.ink}" stroke-width="9" paint-order="stroke" opacity="${P(t, 73.6, .3)}">ПЛАН КЛУБА</text>` + list + total;
@@ -239,7 +239,7 @@ function calculator(t, display, x = 360, y = 640, s = 1) {
    ${keys.map((k, i) => { const cx = -126 + (i % 4) * 84, cy = -90 + Math.floor(i / 4) * 92; return `<rect x="${cx - 34}" y="${cy - 34}" width="68" height="68" rx="16" fill="${i % 4 === 3 ? '#f29a2e' : '#555566'}" stroke="${C.ink}" stroke-width="4"/><text x="${cx}" y="${cy}" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="30" fill="#fff">${k}</text>`; }).join('')}</g>`;
 }
 const T6 = { s: 85.5, e: 91.2, draw(t) { // calculator
-  const disp = t < 87.4 ? '3000' : t < 88.4 ? '3000' : t < 89.5 ? '3000 − 1290' : t < 90.2 ? '1710 − 40' : '1670';
+  const disp = t < 88.4 ? '2400' : t < 89.5 ? '2400 − 1470' : t < 90.2 ? '930 − 60' : '870';
   const press = [87.5, 88.4, 89.5, 90.2].find(p => t >= p && t < p + .25);
   const fx = press ? 300 : 240, fy = press ? 830 : 900;
   const scene = `<rect x="-400" y="-400" width="1520" height="2080" fill="#d9a76f"/>` + calculator(t, disp, 360, 760) +
@@ -248,13 +248,13 @@ const T6 = { s: 85.5, e: 91.2, draw(t) { // calculator
   return cam(scene, { z: lerp(1.0, 1.1, P(t, 85.5, 5.7)), cx: 360, cy: 640, sx, sy }) +
     KTag(t, 85.7, 91.2, 'ЗАРПЛАТА: $0', { x: 360, y: 290, size: 30, bg: C.red, fg: '#fff', rot: -3 }) +
     KT(t, 85.6, 87.3, 'МОЛЧА', { x: 560, y: 1080, size: 36, rot: 6, fill: '#e9e6f2' }, 'rise') +
-    KT(t, 89.5, 91.2, [{ t: '−$40 НА ЕДУ', c: C.red }], { x: 360, y: 400, size: 40, rot: -2 }, 'pop');
+    KT(t, 89.5, 91.2, [{ t: '−$60 НА ЕДУ', c: C.red }], { x: 360, y: 400, size: 40, rot: -2 }, 'pop');
 } };
 const T7 = { s: 91.2, e: 96.0, draw(t) { // Tyoma: zero salary
   const e = talkE(t, 91.3, 95.8, { eyes: 'angry', brow: 'down', mouth: 'frown' });
   const scene = kitchenBG() + person({ x: 360, y: 820, r: 150, kind: 'tyoma', legs: false, e }) + table(1160) + `<rect x="80" y="1080" width="70" height="76" rx="10" fill="${C.red}" stroke="${C.ink}" stroke-width="5"/>`;
   return cam(scene, { z: lerp(1.0, 1.15, P(t, 91.2, 4.8)), cx: 360, cy: 820 }) +
-    dialog(t, { t0: 91.3, t1: 95.9, name: 'ТЁМА', nameBg: '#8db6e6', text: '$1670. И _ноль_ зарплаты.\nА если первый месяц\n_никто_ не придёт?', y: 240, cps: 17 });
+    dialog(t, { t0: 91.3, t1: 95.9, name: 'ТЁМА', nameBg: '#8db6e6', text: '$870. И _ноль_ зарплаты.\nА если первый месяц\n_никто_ не придёт?', y: 240, cps: 17 });
 } };
 const T8 = { s: 96.0, e: 105.5, draw(t) { // envelope "на машину"
   if (t < 100.8) {
@@ -275,7 +275,7 @@ const T8 = { s: 96.0, e: 105.5, draw(t) { // envelope "на машину"
   const [sx, sy] = shake(t, 103.75, .3, 12);
   return cam(scene, { z: lerp(1.05, 1.2, P(t, 100.8, 4.7)), cx: 360, cy: 880, sx, sy }) +
     KT(t, 101.0, 102.4, [{ t: 'ЗАЧЁРКИВАЕТ', c: C.red }], { x: 360, y: 400, size: 44, rot: -4 }, 'pop') +
-    burst(t, 103.75, 360, 420, C.grn) + KT(t, 103.75, 105.5, [{ t: '$1 200', c: C.grn }], { x: 360, y: 420, size: 96, rot: -4 });
+    burst(t, 103.75, 360, 420, C.grn) + KT(t, 103.75, 105.5, [{ t: '$1 000', c: C.grn }], { x: 360, y: 420, size: 96, rot: -4 });
 } };
 function tyomaRule(t, t0, t1, y = 980) { // pinned "rule" card, callback later
   if (t < t0 || t > t1 + .3) return '';
@@ -305,9 +305,9 @@ const T9 = { s: 105.5, e: 115.3, draw(t) { // "держи" + rule
 } };
 const T10 = { s: 115.3, e: 121.2, draw(t) { // ledger + debt
   const sc = `<rect x="-400" y="-400" width="1520" height="2080" fill="#8d5a36"/>` + ledger(t, [
-    { t0: -1, l: 'Начало', v: '$3000' }, { t0: 116.3, l: '+ долг Тёмы', v: '+$1200', c: '#1f8a4c' }, { t0: 119.4, l: 'Долг Тёме: $1200', c: C.red, box: 1, dy: 20 }], { y: 250, h: 900 });
+    { t0: -1, l: 'Начало', v: '$2400' }, { t0: 116.3, l: '+ долг Тёмы', v: '+$1000', c: '#1f8a4c' }, { t0: 119.4, l: 'Долг Тёме: $1000', c: C.red, box: 1, dy: 20 }], { y: 250, h: 900 });
   return cam(sc, { z: lerp(1.0, 1.06, P(t, 115.3, 6)), cx: 360, cy: 560 }) +
-    KT(t, 117.0, 118.3, [{ t: '+$1 200', c: C.grn }], { x: 360, y: 880, size: 76, rot: -4 }) +
+    KT(t, 117.0, 118.3, [{ t: '+$1 000', c: C.grn }], { x: 360, y: 880, size: 76, rot: -4 }) +
     KTag(t, 120.3, 121.2, 'В РАМКЕ — ДОЛГ', { x: 360, y: 900, size: 30, bg: C.red, fg: '#fff', rot: 3 });
 } };
 const T11 = { s: 121.2, e: 123.9, draw(t) { // risk
@@ -325,7 +325,7 @@ function listing(y, title, price, hot, k = 1) {
 const T12 = { s: 123.9, e: 134.85, draw(t) { // ads
   const k = eOut(P(t, 123.9, .4)), scroll = lerp(80, 0, eOut(P(t, 124.6, 1.2)));
   const hot = t >= 130.3;
-  const inner = `<g transform="translate(0,${scroll})">${listing(-200, 'PS5 · как новая', '$350')}${listing(-60, 'PS5 срочно', '$300')}${listing(80, 'PS5 «все игры»', '$280', hot)}${listing(220, 'PS5 + 2 геймпада', '$390', false, .7)}</g>`;
+  const inner = `<g transform="translate(0,${scroll})">${listing(-200, 'PS5 · как новая', '$460')}${listing(-60, 'PS5 срочно', '$420')}${listing(80, 'PS5 «все игры»', '$350', hot)}${listing(220, 'PS5 + 2 геймпада', '$520', false, .7)}</g>`;
   const sc = stripesBG(t, '#1c2350', '#222b60') + handsHolding(t) + phone(360, lerp(1300, 690, k), 440, 820, inner, 0, '#2ea56a', 'Объявления');
   let out = cam(sc, { z: hot ? lerp(1, 1.12, eOut(P(t, 130.3, .5))) : 1, cx: 360, cy: hot ? 760 : 640 });
   out += locBanner(t, 124.0, 125.4, '20:00', 'ОБЪЯВЛЕНИЯ');
@@ -337,7 +337,7 @@ const T12 = { s: 123.9, e: 134.85, draw(t) { // ads
     out += `<g transform="translate(470,310) scale(${bk})"><circle cx="-150" cy="110" r="14" fill="#fff" stroke="${C.ink}" stroke-width="4"/><circle cx="-120" cy="80" r="20" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
       <ellipse cx="0" cy="0" rx="230" ry="80" fill="#fff" stroke="${C.ink}" stroke-width="5"/>
       <text y="-16" text-anchor="middle" dy="0.36em" font-family="Caveat" font-weight="700" font-size="40" fill="${C.ink}">возьму две</text>
-      <text y="26" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="34" fill="${C.blue}">по $270</text></g>`;
+      <text y="26" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="34" fill="${C.blue}">по $340</text></g>`;
   }
   return out;
 } };
@@ -430,7 +430,7 @@ const T17 = { s: 158.3, e: 173.0, draw(t) { // courtyard honest seller
 const T18 = { s: 173.0, e: 176.85, draw(t) { // doubt → pay
   const pay = t >= 174.2;
   const scene = yardBG(t) + car(300, 960) + person({ x: 300, y: 760, r: 140, kind: 'hero', legs: false, e: pay ? { eyes: 'half', brow: 'worried', mouth: 'smile' } : { eyes: 'open', brow: 'worried', mouth: 'wavy', sweat: true, look: [.5, 0] } }) +
-    (pay ? `<g transform="translate(${lerp(460, 640, eOut(P(t, 174.3, .6)))},940) rotate(-12)"><rect x="-70" y="-40" width="140" height="80" rx="6" fill="#64c47c" stroke="${C.ink}" stroke-width="4"/><text dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="26" fill="#1f6a35">$700</text></g>` : '');
+    (pay ? `<g transform="translate(${lerp(460, 640, eOut(P(t, 174.3, .6)))},940) rotate(-12)"><rect x="-70" y="-40" width="140" height="80" rx="6" fill="#64c47c" stroke="${C.ink}" stroke-width="4"/><text dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="26" fill="#1f6a35">$900</text></g>` : '');
   return cam(scene, { z: lerp(1.15, 1.0, eOut(P(t, 173, .5))), cx: 330, cy: 800 }) +
     KT(t, 173.0, 174.1, 'СОМНЕВАЕШЬСЯ...', { x: 360, y: 360, size: 40, rot: -3, fill: '#e9e6f2' }, 'rise') +
     KT(t, 174.2, 176.85, [{ t: 'НО ПЛАТИШЬ', c: C.yel }], { x: 360, y: 360, size: 50, rot: 3 }) +
@@ -441,7 +441,7 @@ const T19 = { s: 176.85, e: 183.4, draw(t) { // PS store digital
   const inner = `<rect x="-190" y="-340" width="380" height="250" rx="16" fill="#ff8a3d"/>${[[-170, -200, 40, 110], [-120, -240, 36, 150], [-76, -180, 30, 90]].map(([x, y, w, h]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#5b2a86"/>`).join('')}<circle cx="90" cy="-220" r="50" fill="#ffd166"/>
     <text x="0" y="-290" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="40" fill="#fff" stroke="${C.ink}" stroke-width="8" paint-order="stroke">GTA 6</text>
     <text x="-180" y="-40" font-family="Rubik" font-weight="800" font-size="22" fill="#55525e">Цифровая версия</text>
-    <text x="-180" y="20" font-family="Unbounded" font-weight="900" font-size="52" fill="${C.ink}">$70</text><text x="-50" y="16" font-family="Rubik" font-weight="800" font-size="28" fill="${C.blue}">× 2 консоли</text>
+    <text x="-180" y="20" font-family="Unbounded" font-weight="900" font-size="52" fill="${C.ink}">$80</text><text x="-50" y="16" font-family="Rubik" font-weight="800" font-size="28" fill="${C.blue}">× 2 консоли</text>
     <g transform="translate(0,${t >= 178.4 ? 0 : 0})"><rect x="-180" y="60" width="360" height="70" rx="14" fill="#f4f4f8" stroke="#d8d8e0" stroke-width="3"/><text x="0" y="95" text-anchor="middle" dy="0.36em" font-family="Rubik" font-weight="800" font-size="24" fill="${t >= 178.4 ? C.red : '#8a8796'}">${t >= 178.4 ? 'ДИСК: НЕТ' : 'ДИСК'}</text></g>
     <rect x="-180" y="160" width="360" height="90" rx="45" fill="${bought ? C.grn : C.blue}" stroke="${C.ink}" stroke-width="5"/><text x="0" y="205" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="30" fill="#fff">${bought ? 'КУПЛЕНО ✓'.replace(' ✓', '') : 'КУПИТЬ'}</text>`;
   const sc = stripesBG(t, '#101a3d', '#152150') + handsHolding(t) + phone(360, lerp(1300, 680, k), 460, 860, inner, 0, '#0b2a6b', 'Store');
@@ -454,7 +454,7 @@ const T20 = { s: 183.4, e: 191.6, draw(t) { // 75" dream TV
   const dream = t >= 189.0;
   const heroE = dream ? talkE(t, 189.0, 191.4, { eyes: 'happy', brow: 'up', mouth: 'grin', blush: true }) : { eyes: 'wide', brow: 'up', mouth: 'o', look: [0, -1] };
   let scene = storeBG() + `<g opacity="${.25 + .1 * Math.sin(t * 3)}"><polygon points="140,0 580,0 700,900 20,900" fill="#fff"/></g>` + bigTV(60, 420, 600, 360, true, '75"') +
-    priceTag(560, 410, '$1 100', C.yel, 10, 1.3) + person({ x: 360, y: 1000, r: 100, kind: 'hero', e: heroE });
+    priceTag(560, 410, '$1 300', C.yel, 10, 1.3) + person({ x: 360, y: 1000, r: 100, kind: 'hero', e: heroE });
   if (dream) {
     const bk = eBack(P(t, 189.1, .35));
     scene += `<g transform="translate(360,690) scale(${bk})"><ellipse rx="300" ry="150" fill="#fff" stroke="${C.ink}" stroke-width="6"/><circle cx="-10" cy="190" r="22" fill="#fff" stroke="${C.ink}" stroke-width="5"/>
@@ -464,7 +464,7 @@ const T20 = { s: 183.4, e: 191.6, draw(t) { // 75" dream TV
   return cam(scene, { z: dream ? 1.0 : lerp(1.0, 1.12, eIO(P(t, 183.4, 5))), cx: 360, cy: 700 }) +
     locBanner(t, 183.5, 185.0, '22:10', 'МАГАЗИН ЭЛЕКТРОНИКИ') +
     KT(t, 184.3, 185.6, 'ЗАМИРАЕШЬ', { x: 360, y: 850, size: 44, rot: -3 }, 'pop') +
-    KT(t, 187.6, 189.0, [{ t: '$1 100', c: C.red }], { x: 360, y: 880, size: 72, rot: -4 }) +
+    KT(t, 187.6, 189.0, [{ t: '$1 300', c: C.red }], { x: 360, y: 880, size: 72, rot: -4 }) +
     dialog(t, { t0: 189.1, t1: 191.5, name: 'ТЫ', nameBg: C.red, text: 'Вот на таком к нам бы\n*все* ходили...', y: 250, cps: 18 });
 } };
 const T21 = { s: 191.6, e: 195.6, draw(t) { // Tyoma message
@@ -480,7 +480,7 @@ const T21 = { s: 191.6, e: 195.6, draw(t) { // Tyoma message
 } };
 const T22 = { s: 195.6, e: 202.2, draw(t) { // buy 50" + gamepads
   const scene = storeBG() + bigTV(120, 430, 320, 200, false, '') + `<text x="280" y="530" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="44" fill="#fff">50"</text>` +
-    priceTag(400, 420, '$300', C.yel, 8) + gamepad(540, 720, .9, -10) + gamepad(600, 780, .9, 8, '#2b2833') + priceTag(580, 640, '$150', C.yel, -6) +
+    priceTag(400, 420, '$350', C.yel, 8) + gamepad(540, 720, .9, -10) + gamepad(600, 780, .9, 8, '#2b2833') + priceTag(580, 640, '$160', C.yel, -6) +
     person({ x: 260, y: 900, r: 100, kind: 'hero', e: { eyes: t < 196.6 ? 'closed' : 'half', brow: 'worried', mouth: t < 196.6 ? 'line' : 'smile' } });
   return cam(scene, { z: lerp(1.08, 1.0, P(t, 195.6, 6)), cx: 360, cy: 700 }) +
     KT(t, 195.7, 196.7, 'ВЗДОХ', { x: 160, y: 420, size: 34, rot: -8, fill: '#e9e6f2' }, 'rise') +
@@ -499,7 +499,7 @@ const T23 = { s: 202.2, e: 207.5, draw(t) { // groceries
   s += person({ x: 360, y: 1000, r: 90, kind: 'hero', e: { eyes: 'half', brow: 'flat', mouth: 'line' } });
   return cam(s, { z: 1, cx: 360, cy: 680 }) + locBanner(t, 202.3, 203.8, '22:40', 'СУПЕРМАРКЕТ') +
     KTag(t, 203.2, 205.95, 'ТОЛЬКО НУЖНОЕ', { x: 360, y: 420, size: 28, bg: '#fff', rot: 2 }) +
-    KT(t, 206.0, 207.5, [{ t: '−$40', c: C.red }, { t: ' / НЕДЕЛЯ', c: '#fff' }], { x: 360, y: 420, size: 50, rot: -3 });
+    KT(t, 206.0, 207.5, [{ t: '−$45', c: C.red }, { t: ' / НЕДЕЛЯ', c: '#fff' }], { x: 360, y: 420, size: 50, rot: -3 });
 } };
 function buildBar(t, steps) {
   const done = steps.filter(s => t >= s[0]).length, k = steps.length ? done / steps.length : 0;
@@ -562,21 +562,30 @@ const T27 = { s: 229.6, e: 233.6, draw(t) { // peephole
 } };
 const T28 = { s: 233.6, e: 255.2, draw(t) { // day 1 results
   const rows = [
-    { t0: 235.6, l: 'Было', v: '$3000' }, { t0: 237.0, l: '+ долг Тёмы', v: '+$1200', c: '#1f8a4c' },
-    { t0: 239.0, l: '− PS5 б/у ×2', v: '−$700', c: C.red }, { t0: 240.3, l: '− GTA 6 ×2', v: '−$140', c: C.red },
-    { t0: 242.3, l: '− геймпады ×2', v: '−$150', c: C.red }, { t0: 243.6, l: '− телевизор 50"', v: '−$300', c: C.red },
-    { t0: 245.0, l: '− на себя (нед. 1)', v: '−$40', c: C.red },
-    { t0: 247.0, l: 'Итог', v: '$2870', big: 1, circle: 1, dy: 20 },
-    { t0: 249.6, l: 'Долг Тёме: $1200 · вернул $0', c: C.red, box: 1, dy: 34 },
-    { t0: 250.4, l: 'Своих денег', v: '$1670', c: C.red, dy: 46 }];
-  const focus = rows.filter(r => t >= r.t0).length;
-  const cy = lerp(560, 760, clamp((focus - 4) / 6));
+    { t0: 235.6, l: 'Было', v: '$2400' }, { t0: 237.0, l: '+ долг Тёмы', v: '+$1000', c: '#1f8a4c' },
+    { t0: 239.0, l: '− PS5 б/у ×2', v: '−$900', c: C.red }, { t0: 240.3, l: '− GTA 6 ×2', v: '−$160', c: C.red },
+    { t0: 242.3, l: '− геймпады ×2', v: '−$160', c: C.red }, { t0: 243.6, l: '− телевизор 50"', v: '−$350', c: C.red },
+    { t0: 245.0, l: '− на себя (нед. 1)', v: '−$45', c: C.red },
+    { t0: 247.0, l: 'На счету', v: '$1785', big: 1, circle: 1, dy: 20 },
+    { t0: 249.6, l: 'Из них долг Тёме: $1000', c: C.red, box: 1, dy: 34 },
+    { t0: 251.2, l: 'Своих денег', v: '$785', c: C.red, big: 1, dy: 52 }];
   const sc = `<rect x="-400" y="-400" width="1520" height="2080" fill="#8d5a36"/>` + ledger(t, rows, { y: 250, h: 960, lh: 60 });
   let out = cam(sc, { z: .97, cx: 360, cy: 610 });
   if (t < 235.6) out += dim(.55 * (1 - P(t, 235.2, .4)));
   out += KT(t, 233.7, 235.5, [{ t: 'ДЕНЬ 1', c: '#fff' }], { x: 360, y: 560, size: 90, rot: -4 }) + KT(t, 234.0, 235.5, [{ t: 'ПРОЙДЕН', c: C.yel }], { x: 360, y: 660, size: 60, rot: 3 });
-  if (t >= 254.35) out += dim(.5 * P(t, 254.35, .15));
-  out += stamp(t, 254.4, 360, 600, 'НА МЕЛИ', C.red, -8, 60) + KTag(t, 254.55, 255.2, 'СВОИХ ВСЕГО $1 670', { x: 360, y: 730, size: 28, bg: C.yel, rot: 3 }) + KTag(t, 254.7, 255.2, 'ЗАРПЛАТА $0', { x: 360, y: 810, size: 24, bg: C.ink, fg: '#fff', rot: -2 });
+  // comparison: own money vs what the consoles alone cost
+  if (t >= 252.5) {
+    const k = P(t, 252.5, .2), g = eOut(P(t, 252.7, .6));
+    out += dim(.82 * k);
+    const bar = (y, label, val, max, col, d) => {
+      const w = 520 * (val / max) * eOut(P(t, 252.7 + d, .6));
+      return `<g transform="translate(100,${y})"><text y="-24" font-family="Rubik" font-weight="800" font-size="22" letter-spacing="2" fill="#d9d3f5">${label}</text>
+        <rect width="520" height="54" rx="14" fill="#2a2638" stroke="${C.ink}" stroke-width="4"/><rect width="${w}" height="54" rx="14" fill="${col}" stroke="${C.ink}" stroke-width="4"/>
+        <text x="${Math.max(w, 120) - 16}" y="27" dy="0.36em" text-anchor="end" font-family="Unbounded" font-weight="900" font-size="26" fill="${C.ink}">$${val}</text></g>`;
+    };
+    out += `<g opacity="${k}">${bar(470, 'ОДНИ ПРИСТАВКИ', 900, 900, C.yel, 0)}${bar(600, 'ТВОИ ДЕНЬГИ', 785, 900, C.red, .25)}</g>`;
+    out += stamp(t, 253.5, 380, 790, 'НА МЕЛИ', C.red, -8, 56);
+  }
   return out;
 } };
 const T29 = { s: 255.2, e: 265.3, draw(t) { // day 2, empty club
@@ -597,39 +606,100 @@ const T29 = { s: 255.2, e: 265.3, draw(t) { // day 2, empty club
   if (t >= 259.7 && t < 261.5) out += dim(.5 * P(t, 259.7, .2)) + burst(t, 259.75, 360, 600, C.yel) + KT(t, 259.75, 261.4, [{ t: '2', c: C.yel }], { x: 360, y: 580, size: 220, rot: -4 }) + KT(t, 259.9, 261.4, 'ДНЯ ДО РЕЛИЗА', { x: 360, y: 740, size: 44, rot: 2 });
   if (zero) {
     const k = eBack(P(t, 261.5, .35));
-    out += `<g transform="translate(360,560) scale(${k}) rotate(-3)"><rect x="-150" y="-110" width="300" height="220" rx="24" fill="${C.ink}" transform="translate(8,10)"/><rect x="-150" y="-110" width="300" height="220" rx="24" fill="#fff" stroke="${C.ink}" stroke-width="6"/>
+    const up = eIO(P(t, 263.4, .4)); // card slides up to make room for the debt counter
+    out += `<g transform="translate(360,${lerp(560, 470, up)}) scale(${k * lerp(1, .8, up)}) rotate(-3)"><rect x="-150" y="-110" width="300" height="220" rx="24" fill="${C.ink}" transform="translate(8,10)"/><rect x="-150" y="-110" width="300" height="220" rx="24" fill="#fff" stroke="${C.ink}" stroke-width="6"/>
       <text y="-60" text-anchor="middle" dy="0.36em" font-family="Rubik" font-weight="800" font-size="24" letter-spacing="4" fill="#8a8796">КЛИЕНТЫ</text>
       <text y="30" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="110" fill="${C.red}">0</text></g>`;
-    out += KTag(t, 262.9, 265.3, 'О КЛУБЕ НЕ ЗНАЕТ НИКТО', { x: 360, y: 760, size: 26, bg: C.ink, fg: '#fff', rot: 2 });
+    out += KTag(t, 262.3, 263.3, 'О КЛУБЕ НЕ ЗНАЕТ НИКТО', { x: 360, y: 760, size: 26, bg: C.ink, fg: '#fff', rot: 2 });
+    if (t >= 263.4) { // debt in hours
+      const dk = eBack(P(t, 263.4, .4));
+      out += `<g transform="translate(360,690) scale(${dk})"><rect x="-284" y="-62" width="580" height="140" rx="22" fill="${C.ink}"/><rect x="-290" y="-68" width="580" height="140" rx="22" fill="#17141f" stroke="${C.red}" stroke-width="5"/>
+        <text x="-262" y="-36" dy="0.36em" font-family="Rubik" font-weight="800" font-size="19" letter-spacing="2" fill="${C.red}">ВЕРНУТЬ ТЁМЕ $1 000</text>
+        <text x="262" y="-36" dy="0.36em" text-anchor="end" font-family="Rubik" font-weight="800" font-size="19" fill="#a9a5b8">$5 / час</text>
+        <text x="-262" y="14" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="40" fill="#fff">0 / 200 ЧАСОВ</text>
+        <rect x="-262" y="44" width="524" height="14" rx="7" fill="#3a3546"/><rect x="-262" y="44" width="6" height="14" rx="3" fill="${C.red}"/></g>`;
+    }
   }
   return out;
 } };
+// ---------- final choice: an RPG decision screen ----------
+const CHOICES = [
+  { L: 'A', col: '#3D7BFF', title: 'Реклама в интернете', sub: 'соцсети и чаты района', cost: 50, a: 267.6, b: 270.9,
+    pro: 'Быстро: увидят сотни соседей', con: 'Минус $50 из последних денег', icon: 'phone' },
+  { L: 'Б', col: '#F29A2E', title: 'Листовки по подъездам', sub: 'печать и раздача самому', cost: 20, a: 271.0, b: 272.9,
+    pro: 'Дёшево: всего $20', con: 'Целый день на ногах, отклик неясен', icon: 'flyer' },
+  { L: 'В', col: '#2ED47A', title: 'Позвать друзей', sub: 'и знакомых, бесплатно', cost: 0, a: 273.0, b: 275.5,
+    pro: 'Бесплатно: $0', con: 'Друзья захотят играть даром', icon: 'friends' }];
+function choiceIcon(kind) {
+  if (kind === 'phone') return `<rect x="-17" y="-28" width="34" height="56" rx="8" fill="#fff" stroke="${C.ink}" stroke-width="4"/><rect x="-11" y="-20" width="22" height="30" rx="3" fill="#3D7BFF"/><circle cy="18" r="3" fill="${C.ink}"/>`;
+  if (kind === 'flyer') return `<g transform="rotate(-8)"><rect x="-22" y="-28" width="44" height="56" rx="4" fill="#fff" stroke="${C.ink}" stroke-width="4"/><rect x="-14" y="-18" width="28" height="10" fill="#F29A2E"/><rect x="-14" y="-2" width="28" height="4" fill="#cfcdd6"/><rect x="-14" y="8" width="20" height="4" fill="#cfcdd6"/></g>`;
+  return `${head({ x: -12, y: 2, r: 15, kind: 'colA', e: { eyes: 'happy', mouth: 'smile' } })}${head({ x: 13, y: 6, r: 15, kind: 'colB', e: { eyes: 'happy', mouth: 'smile' } })}`;
+}
 const T30 = { s: 265.3, e: 281.0, draw(t) { // poll
-  const opts = [
-    ['A', 'Реклама в сети', 'соцсети · чаты района', '−$50', C.blue, 267.6, 270.9],
-    ['Б', 'Листовки', 'печать и раздача', '−$20', '#f29a2e', 271.0, 272.9],
-    ['В', 'Сарафан', 'друзья и знакомые', '$0', C.grn, 273.0, 275.5]];
-  let s = stripesBG(t, '#151036', '#1d1648');
-  s += KT(t, 265.4, 281.0, 'КАК НАЙТИ', { x: 360, y: 250, size: 50, rot: -2 }, 'drop') + KT(t, 265.7, 281.0, [{ t: 'ПЕРВЫХ КЛИЕНТОВ?', c: C.yel }], { x: 360, y: 330, size: 40, rot: 1 }, 'drop');
-  opts.forEach(([L, t1, t2, cost, col, a, b], i) => {
-    const k = eBack(P(t, 266.3 + i * .25, .4)); if (k <= 0) return;
-    const act = win(t, a, b), y = 470 + i * 170;
-    s += `<g transform="translate(${lerp(-400, 360, k)},${y}) scale(${act ? 1.06 : 1}) rotate(${act ? -1.5 : 0})">
-      <rect x="-294" y="-66" width="600" height="140" rx="26" fill="${C.ink}"/>
-      <rect x="-300" y="-72" width="600" height="140" rx="26" fill="#fff" stroke="${act ? C.yel : C.ink}" stroke-width="${act ? 8 : 5}"/>
-      <rect x="-286" y="-58" width="112" height="112" rx="20" fill="${col}" stroke="${C.ink}" stroke-width="4"/>
-      <text x="-230" y="0" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="54" fill="#fff">${L}</text>
-      <text x="-150" y="-18" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="28" fill="${C.ink}">${t1}</text>
-      <text x="-150" y="24" dy="0.36em" font-family="Rubik" font-weight="800" font-size="20" fill="#8a8796">${t2}</text>
-      <text x="276" y="0" text-anchor="end" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="32" fill="${cost === '$0' ? C.grn : C.red}">${cost}</text></g>`;
+  const OWN = 785;
+  const cta = t >= 276.3;
+  const active = CHOICES.findIndex(c => win(t, c.a, c.b + .1));
+  let s = `<rect x="-400" y="-400" width="1520" height="2080" fill="#120f22"/>` + stripesBG(t, '#120f22', '#17132c');
+  // soft spotlight + scan grid for a "game menu" feel
+  s += `<defs><radialGradient id="pg" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#3b2e7a" stop-opacity=".55"/><stop offset="1" stop-color="#120f22" stop-opacity="0"/></radialGradient></defs><rect width="720" height="1280" fill="url(#pg)"/>`;
+  // header
+  const hk = eOut(P(t, 265.35, .4));
+  s += `<g opacity="${hk}" transform="translate(0,${(1 - hk) * -30})">
+    <g transform="translate(360,150)"><rect x="-175" y="-22" width="350" height="44" rx="22" fill="${C.yel}" stroke="${C.ink}" stroke-width="4"/>
+    <text text-anchor="middle" dy="0.36em" font-family="Rubik" font-weight="900" font-size="19" letter-spacing="3" fill="${C.ink}">ТВОЙ ВЫБОР · СЕРИЯ 2</text></g></g>`;
+  s += KT(t, 265.4, 290, 'КАК НАЙТИ', { x: 360, y: 225, size: 46, rot: -2 }, 'drop') + KT(t, 265.7, 290, [{ t: 'ПЕРВЫХ КЛИЕНТОВ?', c: C.yel }], { x: 360, y: 295, size: 40, rot: 1 }, 'drop');
+  // budget meter
+  const bk = eOut(P(t, 266.0, .4));
+  const cost = active >= 0 ? CHOICES[active].cost : 0;
+  const after = OWN - cost;
+  s += `<g transform="translate(40,${352 + (1 - bk) * 20})" opacity="${bk}">
+    <text x="0" y="0" dy="0.36em" font-family="Rubik" font-weight="800" font-size="18" letter-spacing="2" fill="#a9a5b8">СВОИХ ДЕНЕГ</text>
+    <text x="640" y="0" dy="0.36em" text-anchor="end" font-family="Unbounded" font-weight="900" font-size="22" fill="${cost ? C.red : '#fff'}">${cost ? `$${OWN} → $${after}` : `$${OWN}`}</text>
+    <rect x="0" y="20" width="640" height="16" rx="8" fill="#2a2638"/><rect x="0" y="20" width="${640 * after / 1000}" height="16" rx="8" fill="${C.grn}"/>
+    ${cost ? `<rect x="${640 * after / 1000}" y="20" width="${640 * cost / 1000}" height="16" fill="${C.red}" opacity="${.6 + .4 * Math.sin(t * 10)}"/>` : ''}
+    <rect x="${640 * .785}" y="14" width="3" height="28" fill="#fff" opacity=".0"/></g>`;
+  // cards
+  CHOICES.forEach((c, i) => {
+    const k = eBack(P(t, 266.4 + i * .2, .45)); if (k <= 0) return;
+    const act = i === active, dimmed = active >= 0 && !act;
+    const y = 480 + i * 192;
+    const sc = act ? 1.04 : dimmed ? .96 : 1;
+    const shine = act ? ((t - c.a) * 1.2) % 1 : -1;
+    const w = 640, h = 176;
+    s += `<g transform="translate(${lerp(-420, 360, k)},${y}) scale(${sc}) rotate(${act ? -1 : 0})" opacity="${dimmed ? .5 : 1}">
+      ${act ? `<rect x="${-w / 2 - 10}" y="${-h / 2 - 10}" width="${w + 20}" height="${h + 20}" rx="34" fill="none" stroke="${c.col}" stroke-width="6" opacity="${.5 + .5 * Math.sin(t * 8)}"/>` : ''}
+      <rect x="${-w / 2 + 6}" y="${-h / 2 + 8}" width="${w}" height="${h}" rx="28" fill="${C.ink}"/>
+      <rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="28" fill="#fff" stroke="${C.ink}" stroke-width="5"/>
+      <path d="M${-w / 2} ${-h / 2 + 28} a28 28 0 0 1 28 -28 h92 v${h} h-92 a28 28 0 0 1 -28 -28z" fill="${c.col}" stroke="${C.ink}" stroke-width="5"/>
+      <text x="${-w / 2 + 60}" y="-26" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="60" fill="#fff" stroke="${C.ink}" stroke-width="7" paint-order="stroke">${c.L}</text>
+      <g transform="translate(${-w / 2 + 60},48)">${choiceIcon(c.icon)}</g>
+      <text x="${-w / 2 + 140}" y="-50" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="22" fill="${C.ink}">${c.title}</text>
+      <text x="${-w / 2 + 140}" y="-18" dy="0.36em" font-family="Rubik" font-weight="700" font-size="19" fill="#8a8796">${c.sub}</text>
+      <g transform="translate(${w / 2 - 20},-50)"><rect x="-96" y="-22" width="96" height="44" rx="12" fill="${c.cost ? '#ffe3e6' : '#dcf8e9'}" stroke="${C.ink}" stroke-width="3"/>
+        <text x="-48" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="22" fill="${c.cost ? C.red : '#1f8a4c'}">${c.cost ? '−$' + c.cost : '$0'}</text></g>
+      <g transform="translate(${-w / 2 + 140},22)"><circle cx="11" cy="0" r="11" fill="${C.grn}"/><path d="M5 0 l4 5 l8 -9" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <text x="32" dy="0.36em" font-family="Rubik" font-weight="800" font-size="21" fill="#1f6a3e">${c.pro}</text></g>
+      <g transform="translate(${-w / 2 + 140},58)"><circle cx="11" cy="0" r="11" fill="${C.red}"/><path d="M6 0 h10" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+        <text x="32" dy="0.36em" font-family="Rubik" font-weight="800" font-size="21" fill="#a3283a">${c.con}</text></g>
+      ${shine >= 0 ? `<rect x="${-w / 2 + (w + 120) * shine - 60}" y="${-h / 2}" width="50" height="${h}" fill="#fff" opacity=".22" transform="skewX(-18)"/>` : ''}
+    </g>`;
   });
-  if (t > 276.3) {
-    const k = eBack(P(t, 276.3, .4)), pulse = 1 + .04 * Math.sin(t * 8);
-    s += `<g transform="translate(360,1000) scale(${k * pulse}) rotate(-2)"><rect x="-290" y="-44" width="590" height="96" rx="48" fill="${C.ink}"/><rect x="-296" y="-50" width="590" height="96" rx="48" fill="${C.yel}" stroke="${C.ink}" stroke-width="6"/>
-      <text text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="28" fill="${C.ink}">ПИШИ А, Б ИЛИ В</text></g>`;
-    s += KT(t, 277.6, 281.0, 'В КОММЕНТАРИЯХ ↓'.replace(' ↓', ''), { x: 360, y: 1090, size: 30, rot: 1 }, 'rise');
+  // call to action
+  if (cta) {
+    const k = eBack(P(t, 276.3, .4)), pulse = 1 + .035 * Math.sin(t * 7);
+    s += `<g transform="translate(360,1050) scale(${k * pulse})">
+      <rect x="-300" y="-54" width="610" height="116" rx="58" fill="${C.ink}"/><rect x="-306" y="-60" width="610" height="116" rx="58" fill="${C.yel}" stroke="${C.ink}" stroke-width="6"/>
+      <g transform="translate(-235,-2)"><path d="M-26 -20 h52 a10 10 0 0 1 10 10 v26 a10 10 0 0 1 -10 10 h-30 l-14 12 v-12 h-8 a10 10 0 0 1 -10 -10 v-26 a10 10 0 0 1 10 -10z" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
+        <circle cx="-12" cy="3" r="4" fill="${C.ink}"/><circle cx="2" cy="3" r="4" fill="${C.ink}"/><circle cx="16" cy="3" r="4" fill="${C.ink}"/></g>
+      <text x="40" y="-16" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="27" fill="${C.ink}">ПИШИ А, Б ИЛИ В</text>
+      <text x="40" y="22" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="20" letter-spacing="2" fill="${C.ink}" opacity="${P(t, 277.2, .3)}">В КОММЕНТАРИЯХ</text></g>`;
+    // the letters fly in like votes
+    ['A', 'Б', 'В'].forEach((L, i) => {
+      const vk = P(t, 277.6 + i * .25, 1.4); if (vk <= 0 || vk >= 1) return;
+      s += `<g transform="translate(${180 + i * 180},${lerp(1000, 430 + i * 192, eOut(vk))}) scale(${1 - .4 * vk})" opacity="${1 - vk}"><circle r="24" fill="${CHOICES[i].col}" stroke="${C.ink}" stroke-width="4"/><text dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="22" fill="#fff">${L}</text></g>`;
+    });
   }
-  s += KTag(t, 278.3, 281.0, 'СЛЕДУЮЩАЯ СЕРИЯ — ПО ВЫБОРУ БОЛЬШИНСТВА', { x: 360, y: 1160, size: 18, bg: '#fff', rot: -1 });
+  s += KTag(t, 278.3, 290, 'СЛЕДУЮЩАЯ СЕРИЯ — ПО ВЫБОРУ БОЛЬШИНСТВА', { x: 360, y: 1150, size: 17, bg: '#fff', rot: -1 }, 'rise');
   return s;
 } };
 const T31 = { s: 281.0, e: 285.0, draw(t) { // end card

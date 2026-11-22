@@ -10,7 +10,7 @@ const eBack = x => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1
 const win = (t, a, b) => t >= a && t < b;
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 let _uid = 0; const uid = p => `${p || 'u'}${_uid++}`;
-const env = t => (window.ENV ? (window.ENV[Math.floor(t * FPS)] || 0) : 0);
+const env = t => (window.ENV2 && window.voiceT ? (window.ENV2[Math.floor(voiceT(t) * FPS)] || 0) : 0);
 // deterministic shake that decays after t0
 function shake(t, t0, dur = .35, amp = 14) {
   if (t < t0 || t > t0 + dur) return [0, 0];

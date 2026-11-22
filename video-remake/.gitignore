@@ -1,5 +1,7 @@
 node_modules/
 assets/voice.wav
 assets/voice_cut.wav
+voice2/*.mp3
+voice2/*.wav
 out/*
 !out/pilot.mp4
