@@ -264,7 +264,7 @@ const T8 = { s: 96.0, e: 105.5, draw(t) { // envelope "на машину"
       <rect x="${60 + 130 * 0}" y="150" width="${door > 0 ? 260 : 0}" height="230" fill="#6e4329" opacity="${door}"/>` +
       (door > .5 && env1 < 1 ? envelope(220, 330, .5, 0) : '') +
       person({ x: lerp(260, 170, up), y: 700, r: 90, kind: 'tyoma', pose: up > .5 ? 'up' : 'stand', e: { eyes: 'open', brow: 'down', mouth: 'line', look: [0, -1] } }) +
-      (env1 > 0 ? envelope(lerp(220, 330, env1), lerp(330, 420, env1), lerp(.5, .8, env1), -8) : '') +
+      (env1 > 0 ? envelope(lerp(220, lerp(260, 170, up) + 1.01 * 90, env1), lerp(330, 700 - 1.6 * 90 - 30, env1), lerp(.5, .6, env1), -8) : '') +
       seated({ x: 520, floor: 1200, r: 84, kind: 'hero', e: { eyes: 'wide', brow: 'up', mouth: 'o', look: [-1, -1] } }) + openTable(330, 760, seatTop(1200, 84), 1200);
     return cam(scene, { z: lerp(1.0, 1.1, P(t, 96, 4.8)), cx: 360, cy: 640 }) +
       KTag(t, 99.0, 100.8, '«НА МАШИНУ»', { x: 520, y: 330, size: 28, bg: '#f3e2c0', rot: 6 });
@@ -511,15 +511,23 @@ function buildBar(t, steps) {
 }
 const T24 = { s: 207.5, e: 216.5, draw(t) { // build the club
   const push = eOut(P(t, 209.9, 1.0));
-  const plug = t >= 212.5;
-  const scene = grannyFlatBG(t, { noSideboard: true, noTV: plug, crtOn: false }) +
-    `<g transform="translate(${lerp(0, 160, push)},0)"><rect x="470" y="330" width="230" height="560" fill="#7a4b2c" stroke="${C.ink}" stroke-width="6"/><rect x="490" y="350" width="190" height="210" fill="#bfe3ef" stroke="${C.ink}" stroke-width="5"/></g>` +
-    (plug ? `<rect x="-20" y="650" width="560" height="240" fill="#6e4329" stroke="${C.ink}" stroke-width="6"/>` +
-      `<g opacity="${P(t, 213.3, .3)}"><rect x="20" y="500" width="190" height="150" rx="16" fill="#5a5a66" stroke="${C.ink}" stroke-width="6"/><rect x="40" y="518" width="130" height="112" rx="10" fill="#ff8a3d" stroke="${C.ink}" stroke-width="4"/><text x="105" y="574" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="22" fill="#fff">GTA 6</text></g>` +
-      `<g opacity="${P(t, 214.6, .3)}">${bigTV(250, 470, 260, 170, true, '')}</g>` +
-      `<g opacity="${P(t, 215.5, .3)}">${consoleBox(150, 760, .45, 90)}${consoleBox(380, 760, .45, 90)}</g>` : '') +
-    person({ x: plug ? 560 : lerp(300, 430, push), y: 800, r: 90, kind: 'hero', pose: plug ? 'stand' : 'stand', e: { eyes: 'open', brow: 'down', mouth: push > 0 && push < 1 ? 'grin' : 'smirk' } });
-  return cam(scene, { z: 1.0, cx: 360, cy: 700 }) + locBanner(t, 207.6, 209.2, '23:00', 'НОЧЬ') +
+  const sx = lerp(0, 160, push); // sideboard offset: hero pushes it from its left side
+  const crtOn = t >= 213.3;
+  const scene = grannyFlatBG(t, { noSideboard: true, noTV: true }) +
+    `<g transform="translate(${sx},0)"><rect x="470" y="330" width="230" height="560" fill="#7a4b2c" stroke="${C.ink}" stroke-width="6"/><rect x="490" y="350" width="190" height="210" fill="#bfe3ef" stroke="${C.ink}" stroke-width="5"/>
+      ${[0, 1, 2].map(i => `<circle cx="${525 + i * 60}" cy="420" r="20" fill="#fff" stroke="${C.ink}" stroke-width="4"/>`).join('')}
+      <rect x="490" y="590" width="90" height="280" fill="#8c5934" stroke="${C.ink}" stroke-width="5"/><rect x="590" y="590" width="90" height="280" fill="#8c5934" stroke="${C.ink}" stroke-width="5"/></g>` +
+    // low TV table stays; it widens into the club console once space is free
+    `<rect x="-30" y="650" width="${lerp(300, 570, eIO(P(t, 211.2, .8)))}" height="240" fill="#6e4329" stroke="${C.ink}" stroke-width="6"/>` +
+    `<g><rect x="20" y="500" width="190" height="150" rx="16" fill="#5a5a66" stroke="${C.ink}" stroke-width="6"/><rect x="40" y="518" width="130" height="112" rx="10" fill="${crtOn ? '#ff8a3d' : '#3b6e7a'}" stroke="${C.ink}" stroke-width="4"/>
+      ${crtOn ? `<text x="105" y="574" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="22" fill="#fff">GTA 6</text>` : ''}<path d="M90 500 L60 440 M140 500 L170 440" stroke="${C.ink}" stroke-width="5"/></g>` +
+    (t >= 214.6 ? `<g transform="translate(0,${(1 - eOut(P(t, 214.6, .35))) * -40})">${bigTV(250, 470, 260, 170, true, '')}</g>` : '') +
+    (t >= 215.5 ? `<g transform="translate(0,${(1 - eOut(P(t, 215.5, .3))) * -30})">${consoleBox(150, 760, .45, 90)}${consoleBox(380, 760, .45, 90)}</g>` : '');
+  // hero: walks to sideboard, pushes (arms forward), then steps aside to plug things in
+  const heroX = t < 209.9 ? lerp(300, 400, eIO(P(t, 208.6, 1.2))) : t < 211.0 ? 400 + sx : lerp(560, 600, P(t, 211.0, 1));
+  const pushing = t >= 209.7 && t < 211.0;
+  const heroS = person({ x: heroX, y: 690, r: 80, kind: 'hero', pose: pushing ? 'wide' : 'stand', walk: (t > 208.6 && t < 209.8) || pushing ? t * 8 : 0, e: { eyes: pushing ? 'closed' : 'open', brow: 'down', mouth: pushing ? 'wavy' : 'smirk', look: [1, 0], sweat: pushing } });
+  return cam(scene + heroS, { z: 1.0, cx: 360, cy: 700 }) + locBanner(t, 207.6, 209.2, '23:00', 'НОЧЬ') +
     (t >= 209.3 ? buildBar(t, [[209.9], [211.0], [213.3], [214.6], [215.5]]) : '') +
     KT(t, 208.8, 209.9, [{ t: 'КВАРТИРА → КЛУБ', c: C.yel }], { x: 360, y: 440, size: 40, rot: -3 }, 'pop') +
     KTag(t, 209.9, 211.0, 'СЕРВАНТ — В СТОРОНУ', { x: 380, y: 430, size: 24, bg: '#fff', rot: 3 }) +

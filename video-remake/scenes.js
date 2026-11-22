@@ -82,7 +82,7 @@ const S2 = {
     const lt = t - this.s;
     const land = 3.15;
     const pk = eOut(P(t, 2.5, .65));
-    const px = lerp(520, 400, pk), py = lerp(1450, seatTop(1000, 92) + 40, pk), pr = lerp(25, -6, pk);
+    const px = lerp(260, 400, pk), py = lerp(760, seatTop(1000, 92) + 40, pk), pr = lerp(-10, -6, pk);
     const [sx, sy] = shake(t, land, .25, 10);
     const [sx2, sy2] = shake(t, 3.95, .3, 16);
     const surprised = t > 4.5;
@@ -93,7 +93,7 @@ const S2 = {
       mug(610, seatTop(1000, 92) - 36, 80) +
       // hand + sleeve sliding paper in
       `<g>${paperDoc(px, py, pr)}</g>` +
-      (pk < 1 || t < land + .35 ? `<g transform="translate(${px + 30},${py + 90 + 200 * P(t, land + .05, .3)}) rotate(-12)"><path d="M0 0 L20 300" stroke="${C.ink}" stroke-width="64" stroke-linecap="round"/><path d="M0 0 L20 300" stroke="${C.jacket}" stroke-width="54" stroke-linecap="round"/><rect x="-30" y="20" width="62" height="22" rx="8" fill="${C.jacketD}" stroke="${C.ink}" stroke-width="4"/><circle r="26" fill="#fff" stroke="${C.ink}" stroke-width="4"/><ellipse cx="-22" cy="-8" rx="10" ry="7" fill="#fff" stroke="${C.ink}" stroke-width="3"/></g>` : '') +
+      person({ x: lerp(-120, 150, eOut(P(t, 2.4, .6))), y: 640, r: 80, kind: 'hero', pose: 'stand', walk: t < 3.0 ? t * 9 : 0, e: { eyes: 'half', brow: 'down', mouth: 'line', look: [1, 0] } }) +
       stamp(t, 3.95, 400, seatTop(1000, 92) + 60, 'УВОЛЬНЕНИЕ', C.red, -12, 32);
     const z = lerp(1, 1.18, eIO(P(t, 2.4, 3.2)));
     return cam(scene, { z, cx: 380, cy: 820, sx: sx + sx2, sy: sy + sy2 }) +
