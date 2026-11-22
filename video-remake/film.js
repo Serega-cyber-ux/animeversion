@@ -5,7 +5,10 @@ const SCENES = [
   { ...S11, tin: 'whip' }, { ...S12, tin: 'flash' }, { ...S13, tin: 'whip' },
   ...PART2.map(([sc, tin]) => ({ ...sc, tin })),
 ];
-const END = 284.85;
+const CUT = [251.05, 254.35]; // removed narration line (seconds of source audio)
+const CUTLEN = CUT[1] - CUT[0];
+const srcT = t => (t < CUT[0] ? t : t + CUTLEN);
+const END = 284.85; // source end
 // money events: [time, delta]
 const MONEY = [[115.6, 1200], [174.3, -700], [179.9, -140], [199.3, -450], [206.0, -40]];
 function moneyAt(t) { return 3000 + MONEY.reduce((a, [t0, d]) => a + d * eOut(P(t, t0, .7)), 0); }
@@ -25,7 +28,7 @@ function overlays(t) {
     s += moneyCard(moneyAt(t), { x: x + sx, y: y + sy, sc, flash: ev ? clamp(1 - (t - ev[0]) * 3) * .5 : 0 });
     if (ev) { // flying delta chip
       const k = P(t, ev[0], 1.4), up = ev[1] > 0;
-      s += tag((up ? '+$' : '−$') + Math.abs(ev[1]).toLocaleString('ru-RU').replace(/\s/g, ' '), { x: HUD.money.x + 150, y: HUD.y + 120 + 60 * eOut(k), size: 30, bg: up ? C.grn : C.red, fg: '#fff', rot: up ? -4 : 4, op: 1 - eIn(k), sc: eBack(clamp(k * 5)) });
+      s += tag((up ? '+$' : '−$') + Math.abs(ev[1]).toLocaleString('ru-RU').replace(/\s/g, ' '), { x: HUD.money.x + 360, y: HUD.y + 190 + 60 * eOut(k), size: 30, bg: up ? C.grn : C.red, fg: '#fff', rot: up ? -4 : 4, op: 1 - eIn(k), sc: eBack(clamp(k * 5)) });
     }
   }
   // debt chip (persistent after Tyoma's loan)
@@ -49,6 +52,7 @@ function overlays(t) {
 }
 function frame(t) {
   _uid = 0;
+  // t is source time
   const sc = SCENES.find(s => t >= s.s && t < s.e) || SCENES[SCENES.length - 1];
   let body = sc.draw(t);
   const lt = t - sc.s;

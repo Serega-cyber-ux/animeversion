@@ -17,5 +17,5 @@ html,body{margin:0;background:#000}#root{width:720px;height:1280px;overflow:hidd
 <script src="assets/env.js"></script><script src="lib.js"></script><script src="scenes.js"></script><script src="scenes2.js"></script><script src="film.js"></script>
 <script>
 window.ready=(async()=>{const fs=[];for(const f of['Unbounded','Rubik','Caveat'])for(const w of[700,800,900])fs.push(document.fonts.load(`${w} 40px ${f}`,'АБВ GTA $1'));await Promise.all(fs);await document.fonts.ready;return true})();
-window.renderAt=t=>{document.getElementById('root').innerHTML=frame(t)};
+window.renderAt=t=>{document.getElementById('root').innerHTML=frame(srcT(t))};window.renderSrc=t=>{document.getElementById('root').innerHTML=frame(t)};
 </script></body></html>

@@ -6,7 +6,7 @@ const [out, ...ts] = process.argv.slice(2);
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto('file://' + path.resolve(__dirname, 'index.html')); await p.evaluate(() => window.ready);
   const imgs = [];
-  for (const t of ts) { await p.evaluate(t => window.renderAt(t), +t); imgs.push((await p.screenshot({ type: 'jpeg', quality: 80 })).toString('base64')); }
+  for (const t of ts) { await p.evaluate(t => window.renderSrc(t), +t); imgs.push((await p.screenshot({ type: 'jpeg', quality: 80 })).toString('base64')); }
   if (errs.length) console.error(errs);
   const cols = Math.min(4, ts.length), rows = Math.ceil(ts.length / cols);
   await p.setViewportSize({ width: cols * 360, height: rows * 660 });

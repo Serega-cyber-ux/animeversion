@@ -157,6 +157,7 @@ function locBanner(t, t0, t1, time, place) {
   const k = eOut(P(t, t0, .35)), x = P(t, t1, .25);
   const w = measure(place, 34, 'Unbounded', 900) + 80;
   return `<g transform="translate(360,${330})" opacity="${k * (1 - x)}">
+   <rect x="${-w / 2 - 30}" y="-108" width="${w + 60}" height="170" rx="20" fill="#120f1c" opacity=".55"/>
    <rect x="${-w / 2 * k}" y="-2" width="${w * k}" height="4" fill="${C.yel}" transform="translate(0,-46)"/>
    <text y="-74" text-anchor="middle" dy="0.36em" font-family="Rubik" font-weight="800" font-size="20" letter-spacing="4" fill="${C.yel}" stroke="${C.ink}" stroke-width="5" paint-order="stroke">${esc(time)}</text>
    <text y="${(1 - k) * 20}" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="34" fill="#fff" stroke="${C.ink}" stroke-width="9" paint-order="stroke" letter-spacing="${(1 - k) * 10}">${esc(place)}</text>
@@ -192,9 +193,9 @@ function allyCard(t, t0, rows) {
 }
 const T3 = { s: 65.0, e: 73.5, draw(t) { // Tyoma's kitchen
   const close = t >= 70.6;
-  const ty = { x: close ? 360 : 230, y: close ? 760 : 760, r: close ? 150 : 88, kind: 'tyoma', legs: false, e: close ? talkE(t, 70.7, 72.5, { eyes: 'wide', brow: 'up', mouth: 'o', sweat: true }) : { eyes: 'open', brow: 'flat', mouth: 'smile', look: [1, 0] } };
+  const ty = { x: close ? 360 : 230, y: close ? 760 : 690, r: close ? 150 : 88, kind: 'tyoma', legs: false, e: close ? talkE(t, 70.7, 72.5, { eyes: 'wide', brow: 'up', mouth: 'o', sweat: true }) : { eyes: 'open', brow: 'flat', mouth: 'smile', look: [1, 0] } };
   let scene = kitchenBG() + person(ty);
-  if (!close) scene += person({ x: 520, y: 770, r: 84, kind: 'hero', legs: false, e: { eyes: 'half', brow: 'flat', mouth: 'smile', look: [-1, 0] } });
+  if (!close) scene += person({ x: 520, y: 700, r: 84, kind: 'hero', legs: false, e: { eyes: 'half', brow: 'flat', mouth: 'smile', look: [-1, 0] } });
   scene += table(close ? 1100 : 930) + (close ? '' : `<rect x="130" y="880" width="56" height="60" rx="8" fill="${C.red}" stroke="${C.ink}" stroke-width="4"/>`);
   const z = close ? lerp(1.12, 1.0, eOut(P(t, 70.6, .4))) : lerp(1.0, 1.06, P(t, 65, 5.6));
   let out = cam(scene, { z, cx: 360, cy: 780 });
@@ -260,16 +261,16 @@ const T8 = { s: 96.0, e: 105.5, draw(t) { // envelope "на машину"
     const up = eOut(P(t, 96.1, .6)), door = eOut(P(t, 96.9, .5)), env1 = eOut(P(t, 98.1, .6));
     const scene = kitchenBG() + `<g transform="translate(190,265)"><rect x="-130" y="-115" width="${130 * (1 - door * .8)}" height="230" fill="#c98c55" stroke="${C.ink}" stroke-width="6"/></g>
       <rect x="${60 + 130 * 0}" y="150" width="${door > 0 ? 260 : 0}" height="230" fill="#6e4329" opacity="${door}"/>` +
-      (door > .5 && env1 < 1 ? envelope(220, 300, .5, 0) : '') +
-      person({ x: 260, y: lerp(820, 720, up), r: 96, kind: 'tyoma', pose: up > .5 ? 'up' : 'stand', e: { eyes: 'open', brow: 'down', mouth: 'line', look: [0, -1] } }) +
-      (env1 > 0 ? envelope(lerp(220, 360, env1), lerp(300, 150, env1), lerp(.5, .9, env1), -8) : '') +
+      (door > .5 && env1 < 1 ? envelope(220, 330, .5, 0) : '') +
+      person({ x: lerp(260, 170, up), y: lerp(720, 600, up), r: 90, kind: 'tyoma', pose: up > .5 ? 'up' : 'stand', e: { eyes: 'open', brow: 'down', mouth: 'line', look: [0, -1] } }) +
+      (env1 > 0 ? envelope(lerp(220, 330, env1), lerp(330, 420, env1), lerp(.5, .8, env1), -8) : '') +
       person({ x: 500, y: 860, r: 84, kind: 'hero', legs: false, e: { eyes: 'wide', brow: 'up', mouth: 'o', look: [-1, -1] } }) + table(1000);
     return cam(scene, { z: lerp(1.0, 1.1, P(t, 96, 4.8)), cx: 360, cy: 640 }) +
       KTag(t, 99.0, 100.8, '«НА МАШИНУ»', { x: 520, y: 330, size: 28, bg: '#f3e2c0', rot: 6 });
   }
   const cross = P(t, 101.0, .5), slide = eOut(P(t, 101.9, .7)), open = P(t, 103.7, .5);
-  const scene = kitchenBG() + person({ x: 160, y: 760, r: 110, kind: 'tyoma', legs: false, e: { eyes: 'half', brow: 'flat', mouth: 'line' } }) +
-    person({ x: 580, y: 760, r: 110, kind: 'hero', legs: false, e: { eyes: open > 0 ? 'wide' : 'open', brow: 'up', mouth: open > 0 ? 'o' : 'line', look: [-1, .6] } }) +
+  const scene = kitchenBG() + person({ x: 160, y: 700, r: 110, kind: 'tyoma', legs: false, e: { eyes: 'half', brow: 'flat', mouth: 'line' } }) +
+    person({ x: 580, y: 700, r: 110, kind: 'hero', legs: false, e: { eyes: open > 0 ? 'wide' : 'open', brow: 'up', mouth: open > 0 ? 'o' : 'line', look: [-1, .6] } }) +
     table(960) + envelope(lerp(220, 380, slide), 930, 1.1, lerp(-6, 4, slide), { crossed: cross, open });
   const [sx, sy] = shake(t, 103.75, .3, 12);
   return cam(scene, { z: lerp(1.05, 1.2, P(t, 100.8, 4.7)), cx: 360, cy: 880, sx, sy }) +
@@ -290,8 +291,8 @@ const T9 = { s: 105.5, e: 115.3, draw(t) { // "держи" + rule
   const reach = eOut(P(t, 108.5, .9));
   const tyE = talkE(t, 106.3, 108.1, { eyes: t < 109.9 ? 'happy' : 'angry', brow: t < 109.9 ? 'up' : 'down', mouth: t < 109.9 ? 'smile' : 'line', blush: t < 109.9 });
   const tyE2 = win(t, 111.7, 115.1) ? { ...tyE, mouth: 'talk', open: env(t) * 1.7 } : tyE;
-  const scene = kitchenBG() + person({ x: 170, y: 760, r: 110, kind: 'tyoma', legs: false, e: tyE2 }) +
-    person({ x: 570, y: 760, r: 110, kind: 'hero', legs: false, e: { eyes: press > .5 ? 'wide' : 'open', brow: 'up', mouth: press > .5 ? 'o' : 'smile', look: [-1, .5] } }) +
+  const scene = kitchenBG() + person({ x: 170, y: 700, r: 110, kind: 'tyoma', legs: false, e: tyE2 }) +
+    person({ x: 570, y: 700, r: 110, kind: 'hero', legs: false, e: { eyes: press > .5 ? 'wide' : 'open', brow: 'up', mouth: press > .5 ? 'o' : 'smile', look: [-1, .5] } }) +
     table(960) + envelope(380, 930, 1.1, 4, { crossed: 1 }) +
     (reach > 0 ? `<g transform="translate(${lerp(640, 470, reach)},925)"><path d="M0 0 L90 60" stroke="${C.ink}" stroke-width="52" stroke-linecap="round"/><path d="M0 0 L90 60" stroke="${C.jacket}" stroke-width="42" stroke-linecap="round"/><circle r="26" fill="#fff" stroke="${C.ink}" stroke-width="4"/></g>` : '') +
     (press > 0 ? `<g transform="translate(${lerp(120, 330, eOut(press))},915)"><path d="M0 0 L-90 60" stroke="${C.ink}" stroke-width="52" stroke-linecap="round"/><path d="M0 0 L-90 60" stroke="#8db6e6" stroke-width="42" stroke-linecap="round"/><circle r="26" fill="#fff" stroke="${C.ink}" stroke-width="4"/></g>` : '');
@@ -352,7 +353,7 @@ const T13 = { s: 134.85, e: 139.5, draw(t) { // hood seller hurries
   }
   return out;
 } };
-function inspection(t, items, title, okMode, ix = 36, iy = 250) {
+function inspection(t, items, title, okMode, ix = 36, iy = 272) {
   let s = `<g transform="translate(${ix},${iy})"><rect x="6" y="8" width="300" height="${70 + items.length * 56}" rx="16" fill="${C.ink}"/><rect width="300" height="${70 + items.length * 56}" rx="16" fill="#17141f" stroke="${C.ink}" stroke-width="4"/>
    <text x="20" y="34" dy="0.36em" font-family="Rubik" font-weight="800" font-size="18" letter-spacing="2" fill="${C.yel}">${title}</text>`;
   items.forEach(([t0, txt, ok], i) => {
@@ -375,7 +376,7 @@ const T14 = { s: 139.5, e: 147.2, draw(t) { // flashlight inspection
     <g transform="translate(-40,230) rotate(9)"><rect x="-60" y="-34" width="120" height="68" fill="#fff" stroke="${C.ink}" stroke-width="3"/>${[...Array(12)].map((_, i) => `<rect x="${-50 + i * 8}" y="-24" width="${i % 3 ? 3 : 5}" height="34" fill="${C.ink}"/>`).join('')}</g></g>`;
   marks.forEach(([t0, x, y]) => { if (t >= t0) { const k = P(t, t0, .35), L = 2 * Math.PI * 80; con += `<circle cx="${x}" cy="${y}" r="80" fill="none" stroke="${C.red}" stroke-width="8" stroke-dasharray="${L}" stroke-dashoffset="${L * (1 - k)}"/>`; } });
   const mid = uid('fl');
-  const lit = `<defs><radialGradient id="${mid}"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".92"/></radialGradient></defs><rect x="-400" y="-400" width="1520" height="2080" fill="url(#${mid})" transform="translate(${mx - 360},${my - 640})"/>`;
+  const lit = `<defs><radialGradient id="${mid}" gradientUnits="userSpaceOnUse" cx="${mx}" cy="${my}" r="${lerp(60, 330, eOut(fl))}"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".9"/></radialGradient></defs><rect x="-400" y="-400" width="1520" height="2080" fill="url(#${mid})"/>`;
   return cam(con + (fl > 0 ? lit : dim(.9)), { z: lerp(1.15, 1.0, eOut(P(t, 139.5, .6))), cx: 470, cy: 680 }) +
     inspection(t, [[142.5, 'Пломба', 0], [143.6, 'Винты', 0], [146.0, 'Серийник', 0]], 'ПРОВЕРКА', 0, 400, 250) +
     KT(t, 140.2, 141.6, [{ t: 'ФОНАРИК', c: C.yel }], { x: 470, y: 1040, size: 40, rot: -4 }, 'pop');
@@ -456,13 +457,13 @@ const T20 = { s: 183.4, e: 191.6, draw(t) { // 75" dream TV
     priceTag(560, 410, '$1 100', C.yel, 10, 1.3) + person({ x: 360, y: 1000, r: 100, kind: 'hero', e: heroE });
   if (dream) {
     const bk = eBack(P(t, 189.1, .35));
-    scene += `<g transform="translate(360,610) scale(${bk})"><ellipse rx="300" ry="150" fill="#fff" stroke="${C.ink}" stroke-width="6"/><circle cx="-10" cy="190" r="22" fill="#fff" stroke="${C.ink}" stroke-width="5"/>
+    scene += `<g transform="translate(360,690) scale(${bk})"><ellipse rx="300" ry="150" fill="#fff" stroke="${C.ink}" stroke-width="6"/><circle cx="-10" cy="190" r="22" fill="#fff" stroke="${C.ink}" stroke-width="5"/>
       <text y="-90" text-anchor="middle" dy="0.36em" font-family="Rubik" font-weight="800" font-size="22" letter-spacing="3" fill="#8a8796">ОЧЕРЕДЬ</text>
       ${[0, 1, 2, 3, 4, 5].map(i => { const kk = eBack(P(t, 189.4 + i * .15, .3)); return kk > 0 ? `<g transform="translate(${-225 + i * 90},10) scale(${kk})">${head({ r: 34, kind: ['colA', 'colB', 'kid', 'colA', 'tyoma', 'colB'][i], e: { eyes: 'happy', mouth: 'smile', blush: true } })}</g>` : ''; }).join('')}</g>`;
   }
   return cam(scene, { z: dream ? 1.0 : lerp(1.0, 1.12, eIO(P(t, 183.4, 5))), cx: 360, cy: 700 }) +
     locBanner(t, 183.5, 185.0, '22:10', 'МАГАЗИН ЭЛЕКТРОНИКИ') +
-    KT(t, 184.3, 185.6, 'ЗАМИРАЕШЬ', { x: 360, y: 380, size: 44, rot: -3 }, 'pop') +
+    KT(t, 184.3, 185.6, 'ЗАМИРАЕШЬ', { x: 360, y: 850, size: 44, rot: -3 }, 'pop') +
     KT(t, 187.6, 189.0, [{ t: '$1 100', c: C.red }], { x: 360, y: 880, size: 72, rot: -4 }) +
     dialog(t, { t0: 189.1, t1: 191.5, name: 'ТЫ', nameBg: C.red, text: 'Вот на таком к нам бы\n*все* ходили...', y: 250, cps: 18 });
 } };
@@ -497,8 +498,8 @@ const T23 = { s: 202.2, e: 207.5, draw(t) { // groceries
   });
   s += person({ x: 360, y: 1000, r: 90, kind: 'hero', e: { eyes: 'half', brow: 'flat', mouth: 'line' } });
   return cam(s, { z: 1, cx: 360, cy: 680 }) + locBanner(t, 202.3, 203.8, '22:40', 'СУПЕРМАРКЕТ') +
-    KTag(t, 203.2, 207.5, 'ТОЛЬКО НУЖНОЕ', { x: 360, y: 420, size: 28, bg: '#fff', rot: 2 }) +
-    KT(t, 206.0, 207.5, [{ t: '−$40', c: C.red }, { t: ' / НЕДЕЛЯ', c: '#fff' }], { x: 360, y: 900, size: 50, rot: -3 });
+    KTag(t, 203.2, 205.95, 'ТОЛЬКО НУЖНОЕ', { x: 360, y: 420, size: 28, bg: '#fff', rot: 2 }) +
+    KT(t, 206.0, 207.5, [{ t: '−$40', c: C.red }, { t: ' / НЕДЕЛЯ', c: '#fff' }], { x: 360, y: 420, size: 50, rot: -3 });
 } };
 function buildBar(t, steps) {
   const done = steps.filter(s => t >= s[0]).length, k = steps.length ? done / steps.length : 0;
@@ -518,7 +519,7 @@ const T24 = { s: 207.5, e: 216.5, draw(t) { // build the club
       `<g opacity="${P(t, 215.5, .3)}">${consoleBox(150, 760, .45, 90)}${consoleBox(380, 760, .45, 90)}</g>` : '') +
     person({ x: plug ? 560 : lerp(300, 430, push), y: 800, r: 90, kind: 'hero', pose: plug ? 'stand' : 'stand', e: { eyes: 'open', brow: 'down', mouth: push > 0 && push < 1 ? 'grin' : 'smirk' } });
   return cam(scene, { z: 1.0, cx: 360, cy: 700 }) + locBanner(t, 207.6, 209.2, '23:00', 'НОЧЬ') +
-    buildBar(t, [[209.9], [211.0], [213.3], [214.6], [215.5]]) +
+    (t >= 209.3 ? buildBar(t, [[209.9], [211.0], [213.3], [214.6], [215.5]]) : '') +
     KT(t, 208.8, 209.9, [{ t: 'КВАРТИРА → КЛУБ', c: C.yel }], { x: 360, y: 440, size: 40, rot: -3 }, 'pop') +
     KTag(t, 209.9, 211.0, 'СЕРВАНТ — В СТОРОНУ', { x: 380, y: 430, size: 24, bg: '#fff', rot: 3 }) +
     KTag(t, 213.3, 215.5, 'СТАРЫЙ + НОВЫЙ', { x: 300, y: 430, size: 26, bg: C.yel, rot: -3 });
@@ -540,8 +541,9 @@ const T26 = { s: 221.3, e: 229.6, draw(t) { // granny calls
   const heE = talkE(t, 225.4, 227.2, { eyes: 'half', brow: 'up', mouth: 'smile', sweat: t > 225 });
   const scene = grannyFlatBG(t, { noTV: true, noSideboard: true }) + person({ x: 270, y: 820, r: 130, kind: 'hero', pose: 'ear', legs: false, e: heE });
   const ck = eBack(P(t, 221.4, .4));
-  const cam2 = `<g transform="translate(560,540) scale(${ck * .9})"><circle r="116" fill="#e9d9bf" stroke="${C.ink}" stroke-width="7"/><circle r="${128 + 8 * Math.sin(t * 8)}" fill="none" stroke="${C.grn}" stroke-width="5" opacity=".6"/>
-    ${person({ x: 0, y: 10, r: 62, kind: 'granny', legs: false, e: grE })}<rect x="-80" y="76" width="160" height="40" rx="12" fill="${C.grn}" stroke="${C.ink}" stroke-width="4"/><text y="96" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="18" fill="#fff">БАБУШКА</text></g>`;
+  const gcl = uid('gc');
+  const cam2 = `<g transform="translate(560,540) scale(${ck * .9})"><clipPath id="${gcl}"><circle r="112"/></clipPath><circle r="116" fill="#e9d9bf" stroke="${C.ink}" stroke-width="7"/><circle r="${128 + 8 * Math.sin(t * 8)}" fill="none" stroke="${C.grn}" stroke-width="5" opacity=".6"/>
+    <g clip-path="url(#${gcl})">${person({ x: 0, y: 10, r: 62, kind: 'granny', legs: false, e: grE })}</g><circle r="114" fill="none" stroke="${C.ink}" stroke-width="7"/><rect x="-80" y="76" width="160" height="40" rx="12" fill="${C.grn}" stroke="${C.ink}" stroke-width="4"/><text y="96" text-anchor="middle" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="18" fill="#fff">БАБУШКА</text></g>`;
   return cam(scene, { z: 1.05, cx: 360, cy: 800 }) + `<g clip-path="none">${cam2}</g>` +
     dialog(t, { t0: 222.7, t1: 225.3, name: 'БАБУШКА', nameBg: C.grn, text: 'Внучок, ты там ничего\nне *затеваешь*?', y: 250, cps: 20 }) +
     dialog(t, { t0: 225.4, t1: 227.8, name: 'ТЫ', nameBg: C.red, text: 'Не-не, ба. Всё *спокойно*.', y: 250, cps: 20 }) +
@@ -566,14 +568,15 @@ const T28 = { s: 233.6, e: 255.2, draw(t) { // day 1 results
     { t0: 245.0, l: '− на себя (нед. 1)', v: '−$40', c: C.red },
     { t0: 247.0, l: 'Итог', v: '$2870', big: 1, circle: 1, dy: 20 },
     { t0: 249.6, l: 'Долг Тёме: $1200 · вернул $0', c: C.red, box: 1, dy: 34 },
-    { t0: 251.0, l: 'Запас без дохода', v: '11,5 мес', dy: 46 }];
+    { t0: 250.4, l: 'Своих денег', v: '$1670', c: C.red, dy: 46 }];
   const focus = rows.filter(r => t >= r.t0).length;
   const cy = lerp(560, 760, clamp((focus - 4) / 6));
   const sc = `<rect x="-400" y="-400" width="1520" height="2080" fill="#8d5a36"/>` + ledger(t, rows, { y: 250, h: 960, lh: 60 });
   let out = cam(sc, { z: .97, cx: 360, cy: 610 });
   if (t < 235.6) out += dim(.55 * (1 - P(t, 235.2, .4)));
   out += KT(t, 233.7, 235.5, [{ t: 'ДЕНЬ 1', c: '#fff' }], { x: 360, y: 560, size: 90, rot: -4 }) + KT(t, 234.0, 235.5, [{ t: 'ПРОЙДЕН', c: C.yel }], { x: 360, y: 660, size: 60, rot: 3 });
-  out += KT(t, 253.0, 255.2, [{ t: '11,5 МЕСЯЦЕВ', c: C.yel }], { x: 360, y: 1150, size: 52, rot: -3 });
+  if (t >= 254.35) out += dim(.5 * P(t, 254.35, .15));
+  out += stamp(t, 254.4, 360, 600, 'НА МЕЛИ', C.red, -8, 60) + KTag(t, 254.55, 255.2, 'СВОИХ ВСЕГО $1 670', { x: 360, y: 730, size: 28, bg: C.yel, rot: 3 }) + KTag(t, 254.7, 255.2, 'ЗАРПЛАТА $0', { x: 360, y: 810, size: 24, bg: C.ink, fg: '#fff', rot: -2 });
   return out;
 } };
 const T29 = { s: 255.2, e: 265.3, draw(t) { // day 2, empty club

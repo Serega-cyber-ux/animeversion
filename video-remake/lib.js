@@ -78,6 +78,7 @@ function KTag(t, t0, t1, text, o = {}, type = 'pop') {
 
 // game-style dialogue box with typewriter. text markup: *word* = yellow, _word_ = red
 function dialog(t, { t0, t1, name, text, y = 300, cps = 26, nameBg = C.yel, x = 36, w = 648 }) {
+  if (t >= 120.0 && y < 300) y = 300; // keep clear of the debt chip
   if (t < t0 - .05 || t > t1 + .25) return '';
   const inK = eBack(P(t, t0 - .05, .25)), outK = P(t, t1, .2);
   const lines = text.split('\n');
@@ -179,7 +180,7 @@ function head(o) {
   if (kind === 'hood') back = `<path d="M${-1.22 * r} ${.5 * r} Q${-1.3 * r} ${-1.3 * r} 0 ${-1.3 * r} Q${1.3 * r} ${-1.3 * r} ${1.22 * r} ${.5 * r} L${.9 * r} ${1.0 * r} H${-.9 * r}Z" fill="#2b2932" stroke="${C.ink}" stroke-width="${.07 * r}"/>`;
   if (HAIR[kind] && kind !== 'boss') {
     const col = HAIR[kind];
-    hair = `<path clip-path="url(#${id})" fill="${col}" d="M${-1.3 * r} ${-1.3 * r} H${1.3 * r} V${.1 * r} L${.9 * r} ${.1 * r} Q${.86 * r} ${-.36 * r} ${.38 * r} ${-.36 * r} Q${.05 * r} ${-.5 * r} ${-.28 * r} ${-.32 * r} Q${-.8 * r} ${-.36 * r} ${-.9 * r} ${.1 * r} L${-1.3 * r} ${.1 * r}Z" stroke="${C.ink}" stroke-width="4"/>`;
+    hair = `<path clip-path="url(#${id})" fill="${col}" d="M${-1.3 * r} ${-1.3 * r} H${1.3 * r} V${.1 * r} L${.9 * r} ${.1 * r} Q${.86 * r} ${-.36 * r} ${.38 * r} ${-.36 * r} Q${.05 * r} ${-.5 * r} ${-.28 * r} ${-.32 * r} Q${-.8 * r} ${-.36 * r} ${-.9 * r} ${.1 * r} L${-1.3 * r} ${.1 * r}Z" stroke="${C.ink}" stroke-width="4"/><path clip-path="url(#${id})" d="M${-.55 * r} ${-.62 * r} q${.25 * r} ${-.18 * r} ${.55 * r} ${-.16 * r}" stroke="#fff" stroke-opacity=".28" stroke-width="${.06 * r}" fill="none" stroke-linecap="round"/>`;
   } else if (kind === 'boss') {
     hair = `<g clip-path="url(#${id})" fill="#b4b3bd" stroke="${C.ink}" stroke-width="4">
       <ellipse cx="${-.98 * r}" cy="${-.02 * r}" rx="${.26 * r}" ry="${.36 * r}"/><ellipse cx="${.98 * r}" cy="${-.02 * r}" rx="${.26 * r}" ry="${.36 * r}"/></g>
@@ -243,73 +244,93 @@ function head(o) {
     (e.sweat ? `<path d="M${.78 * r} ${-.35 * r} q${.1 * r} ${.18 * r} 0 ${.24 * r} q${-.1 * r} ${-.06 * r} 0 ${-.24 * r}z" fill="#6cc4ff" stroke="${C.ink}" stroke-width="3"/>` : '');
   return `<g transform="translate(${x},${y}) scale(${flip ? -1 : 1},1)">
     <clipPath id="${id}"><circle r="${r}"/></clipPath>${back}
+    ${kind !== 'hood' ? `<g fill="#fff" stroke="${C.ink}" stroke-width="${.055 * r}"><ellipse cx="${-.97 * r}" cy="${.12 * r}" rx="${.15 * r}" ry="${.19 * r}"/><ellipse cx="${.97 * r}" cy="${.12 * r}" rx="${.15 * r}" ry="${.19 * r}"/></g><path d="M${-1.0 * r} ${.06 * r} q${.06 * r} ${.06 * r} 0 ${.12 * r} M${1.0 * r} ${.06 * r} q${-.06 * r} ${.06 * r} 0 ${.12 * r}" stroke="${C.ink}" stroke-width="${.03 * r}" fill="none"/>` : ''}
     <circle r="${r}" fill="${kind === 'hood' ? '#e4e3ea' : '#fff'}"/>${hair}
     <circle r="${r}" fill="none" stroke="${C.ink}" stroke-width="${.075 * r}"/>
-    ${eye(-ex)}${eye(ex)}${brow(-ex, -1)}${brow(ex, 1)}${mouth}${extra}
+    ${eye(-ex)}${eye(ex)}${brow(-ex, -1)}${brow(ex, 1)}
+    <path d="M${-.03 * r} ${.2 * r} q${.07 * r} ${.06 * r} ${.01 * r} ${.11 * r}" fill="none" stroke="${C.ink}" stroke-width="${.035 * r}" stroke-linecap="round" opacity=".7"/>
+    ${mouth}${extra}
     ${kind === 'tyoma' ? `<g fill="#fff" fill-opacity=".25" stroke="${C.ink}" stroke-width="${.05 * r}"><rect x="${-ex - .25 * r}" y="${ey - .2 * r}" width="${.5 * r}" height="${.38 * r}" rx="${.12 * r}"/><rect x="${ex - .25 * r}" y="${ey - .2 * r}" width="${.5 * r}" height="${.38 * r}" rx="${.12 * r}"/></g><path d="M${-ex + .25 * r} ${ey - .04 * r} H${ex - .25 * r}" stroke="${C.ink}" stroke-width="${.05 * r}"/>` : ''}
     ${kind === 'dad' ? `<path d="M${-.26 * r} ${.36 * r} Q${-.13 * r} ${.24 * r} 0 ${.32 * r} Q${.13 * r} ${.24 * r} ${.26 * r} ${.36 * r} Q${.13 * r} ${.4 * r} 0 ${.36 * r} Q${-.13 * r} ${.4 * r} ${-.26 * r} ${.36 * r}Z" fill="#3a302b" stroke="${C.ink}" stroke-width="3"/>` : ''}
   </g>`;
 }
 
-// full body. (x,y) = head center. pose: 'stand'|'box'|'hands'|'mug'
+// full body. (x,y) = head center. Slim "series" proportions: ~2.4 heads tall.
+// pose: 'stand'|'box'|'mug'|'ear'|'wide'|'up'|'phone'
 function person(o) {
   const { x = 0, y = 0, r = 60, kind = 'hero', pose = 'stand', legs = true, walk = 0, sc = 1, flip = false, rot = 0 } = o;
   const isBoss = kind === 'boss';
   const BODY = { boss: C.boss, hero: C.jacket, colA: '#4f7fb8', colB: '#8a5aa8', tyoma: '#8db6e6', hood: '#2b2932', dad: '#d8453c', kid: '#f2c53d', granny: '#7a5a8a' };
+  const PANTS = { hero: '#2f3a4f', boss: '#232a40', tyoma: '#3b3f4a', hood: '#1f1d24', dad: '#3a3f55', kid: '#4f7fb8', granny: '#5a4466', colA: '#2f3a4f', colB: '#2f3a4f' };
   const body = o.bodyCol || BODY[kind] || C.jacket;
-  const bodyD = isBoss ? '#232a40' : kind === 'hero' ? C.jacketD : 'rgba(0,0,0,.18)';
-  const tw = 1.0 * r, ty = .78 * r, th = 1.75 * r;
-  const lg = walk ? Math.sin(walk) * .18 * r : 0;
-  const legsS = legs ? `<g fill="${C.pants}" stroke="${C.ink}" stroke-width="4">
-     <rect x="${-.42 * r + lg}" y="${ty + th - 10}" width="${.34 * r}" height="${.85 * r}" rx="8"/>
-     <rect x="${.08 * r - lg}" y="${ty + th - 10}" width="${.34 * r}" height="${.85 * r}" rx="8"/></g>
-     <g fill="#fff" stroke="${C.ink}" stroke-width="4"><ellipse cx="${-.28 * r + lg}" cy="${ty + th + .78 * r}" rx="${.27 * r}" ry="${.13 * r}"/><ellipse cx="${.28 * r - lg}" cy="${ty + th + .78 * r}" rx="${.27 * r}" ry="${.13 * r}"/></g>` : '';
-  const torso = `<path d="M${-tw} ${ty + th} L${-tw * .98} ${ty + .4 * r} Q${-tw} ${ty} ${-tw * .55} ${ty} H${tw * .55} Q${tw} ${ty} ${tw * .98} ${ty + .4 * r} L${tw} ${ty + th} Z" fill="${body}" stroke="${C.ink}" stroke-width="4.5" stroke-linejoin="round"/>`;
-  let detail;
-  if (isBoss) detail = `<path d="M${-.3 * r} ${ty - 2} L0 ${ty + .75 * r} L${.3 * r} ${ty - 2}Z" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
-     <path d="M${-.08 * r} ${ty + .1 * r} L${.08 * r} ${ty + .1 * r} L${.1 * r} ${ty + .62 * r} L0 ${ty + .74 * r} L${-.1 * r} ${ty + .62 * r}Z" fill="${C.tie}" stroke="${C.ink}" stroke-width="3.5"/>`;
-  else if (kind === 'hood') detail = `<path d="M${-.15 * r} ${ty + .1 * r} v${.5 * r} M${.15 * r} ${ty + .1 * r} v${.5 * r}" stroke="#eee" stroke-width="4" stroke-linecap="round"/><rect x="${-.6 * r}" y="${ty + 1.0 * r}" width="${1.2 * r}" height="${.4 * r}" rx="10" fill="#232129" stroke="${C.ink}" stroke-width="3"/>`;
-  else if (kind !== 'hero') detail = '';
-  else detail = `<path d="M0 ${ty + .2 * r} V${ty + th - 6}" stroke="${bodyD}" stroke-width="4" stroke-dasharray="7 6"/>
-     <path d="M${-.42 * r} ${ty} L0 ${ty + .32 * r} L${.42 * r} ${ty}" fill="${bodyD}" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"/>
-     <rect x="${.48 * r}" y="${ty + .45 * r}" width="${.16 * r}" height="${.07 * r}" rx="3" fill="${C.yel}" stroke="${C.ink}" stroke-width="2"/>`;
-  const arm = (side, hx, hy, ex2, ey2) => {
-    const sx = side * tw * .86, sy = ty + .32 * r;
-    const d = `M${sx} ${sy} Q${ex2} ${ey2} ${hx} ${hy}`;
-    return `<path d="${d}" stroke="${C.ink}" stroke-width="${.36 * r + 9}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${body}" stroke-width="${.36 * r}" fill="none" stroke-linecap="round"/>`;
-  };
-  const hand = (hx, hy) => `<circle cx="${hx}" cy="${hy}" r="${.19 * r}" fill="#fff" stroke="${C.ink}" stroke-width="4"/>`;
-  let arms = '', front = '';
-  if (pose === 'stand') {
-    const sw2 = walk ? Math.sin(walk) * .15 * r : 0;
-    arms = arm(-1, -tw * 1.05 - sw2, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, tw * 1.05 + sw2, ty + 1.45 * r, tw * 1.2, ty + .8 * r);
-    front = hand(-tw * 1.05 - sw2, ty + 1.45 * r) + hand(tw * 1.05 + sw2, ty + 1.45 * r);
-  } else if (pose === 'box') {
-    const bw = 1.7 * r, bh = 1.0 * r, by = ty + .75 * r;
-    arms = arm(-1, -bw / 2 + 6, by + bh * .55, -tw * 1.15, ty + .9 * r) + arm(1, bw / 2 - 6, by + bh * .55, tw * 1.15, ty + .9 * r);
-    front = `<g><rect x="${-bw / 2}" y="${by}" width="${bw}" height="${bh}" rx="6" fill="#c99158" stroke="${C.ink}" stroke-width="4.5"/>
-      <rect x="${-bw / 2}" y="${by}" width="${bw}" height="${.2 * r}" fill="#b47d47" stroke="${C.ink}" stroke-width="4"/>
-      <rect x="${-.12 * r}" y="${by + .2 * r}" width="${.24 * r}" height="${bh - .2 * r}" fill="#e2b781" opacity=".8"/>
-      <path d="M${-bw * .3} ${by} l${-.1 * r} ${-.35 * r} l${.3 * r} ${.08 * r}z" fill="#3d7bff" stroke="${C.ink}" stroke-width="3"/>
-      <rect x="${bw * .08}" y="${by - .42 * r}" width="${.22 * r}" height="${.45 * r}" rx="4" fill="#59b36b" stroke="${C.ink}" stroke-width="3"/></g>` +
-      hand(-bw / 2 + 6, by + bh * .55) + hand(bw / 2 - 6, by + bh * .55);
-  } else if (pose === 'mug') {
-    arms = arm(-1, -tw * 1.05, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, tw * .55, ty + .1 * r, tw * 1.35, ty + .9 * r);
-    front = hand(-tw * 1.05, ty + 1.45 * r) + mug(tw * .55 + .25 * r, ty - .05 * r, r * .9) + hand(tw * .55, ty + .1 * r);
-  } else if (pose === 'ear') {
-    arms = arm(-1, -tw * 1.05, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, .75 * r, -.05 * r, tw * 1.4, ty + .6 * r);
-    front = hand(-tw * 1.05, ty + 1.45 * r) + `<rect x="${.55 * r}" y="${-.55 * r}" width="${.3 * r}" height="${.62 * r}" rx="8" fill="${C.ink}" transform="rotate(25 ${.7 * r} ${-.2 * r})"/>` + hand(.75 * r, -.05 * r);
-  } else if (pose === 'wide') {
-    arms = arm(-1, -tw * 1.9, ty + .3 * r, -tw * 1.5, ty + .1 * r) + arm(1, tw * 1.9, ty + .3 * r, tw * 1.5, ty + .1 * r);
-    front = hand(-tw * 1.9, ty + .3 * r) + hand(tw * 1.9, ty + .3 * r);
-  } else if (pose === 'up') {
-    arms = arm(-1, -tw * 1.05, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, tw * 1.1, -1.4 * r, tw * 1.4, ty * .2);
-    front = hand(-tw * 1.05, ty + 1.45 * r) + hand(tw * 1.1, -1.4 * r);
-  } else if (pose === 'phone') {
-    arms = arm(-1, -.15 * r, ty + .35 * r, -tw * 1.1, ty + 1.2 * r) + arm(1, .3 * r, ty + .35 * r, tw * 1.1, ty + 1.2 * r);
-    front = '';
+  const dark = 'rgba(0,0,0,.16)';
+  const ty = 1.0 * r, tw = .76 * r, th = legs ? 1.5 * r : 6 * r, wb = .7 * r;
+  const lg = walk ? Math.sin(walk) * .2 * r : 0;
+  const lw = .3 * r, ll = 1.3 * r, hip = ty + th - .05 * r;
+  const pants = PANTS[kind] || C.pants;
+  let legsS = '';
+  if (legs) {
+    const leg = (cx, off) => `<path d="M${cx - lw / 2 + off} ${hip - 10} h${lw} l${-off * .2} ${ll} h${-lw}z" fill="${pants}" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"/>`;
+    const shoe = (cx, off) => { const fx = cx + off * .8, fy = hip + ll; return `<path d="M${fx - .2 * r} ${fy - .02 * r} q0 ${-.14 * r} ${.18 * r} ${-.14 * r} h${.06 * r} q${.2 * r} 0 ${.22 * r} ${.14 * r} v${.05 * r} h${-.46 * r}z" fill="#fff" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"/><rect x="${fx - .2 * r}" y="${fy + .02 * r}" width="${.46 * r}" height="${.06 * r}" rx="3" fill="#cfd0d8" stroke="${C.ink}" stroke-width="3"/><path d="M${fx - .02 * r} ${fy - .1 * r} l${.06 * r} 0 M${fx} ${fy - .06 * r} l${.06 * r} 0" stroke="${C.ink}" stroke-width="2.5"/>`; };
+    legsS = `<ellipse cx="0" cy="${hip + ll + .1 * r}" rx="${.75 * r}" ry="${.12 * r}" fill="#000" opacity=".18"/>` +
+      leg(-.17 * r, lg) + leg(.17 * r, -lg) + shoe(-.2 * r, lg) + shoe(.2 * r, -lg);
   }
-  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${flip ? -sc : sc},${sc})">${legsS}${torso}${detail}${arms}
+  const torso = `<path d="M${-wb} ${ty + th} L${-tw} ${ty + .32 * r} Q${-tw} ${ty} ${-tw * .5} ${ty - .02 * r} H${tw * .5} Q${tw} ${ty} ${tw} ${ty + .32 * r} L${wb} ${ty + th} Z" fill="${body}" stroke="${C.ink}" stroke-width="4.5" stroke-linejoin="round"/>`;
+  const neck = `<rect x="${-.13 * r}" y="${.8 * r}" width="${.26 * r}" height="${.3 * r}" fill="#fff" stroke="${C.ink}" stroke-width="4"/>`;
+  let detail = '';
+  const hem = legs ? `<path d="M${-wb + 2} ${ty + th - .14 * r} H${wb - 2}" stroke="${dark}" stroke-width="${.1 * r}"/>` : '';
+  if (isBoss) detail = `<path d="M${-.26 * r} ${ty - 2} L0 ${ty + .62 * r} L${.26 * r} ${ty - 2}Z" fill="#fff" stroke="${C.ink}" stroke-width="3.5"/>
+     <path d="M${-.07 * r} ${ty + .08 * r} H${.07 * r} L${.09 * r} ${ty + .52 * r} L0 ${ty + .64 * r} L${-.09 * r} ${ty + .52 * r}Z" fill="${C.tie}" stroke="${C.ink}" stroke-width="3"/>
+     <path d="M${-.26 * r} ${ty} L${-.08 * r} ${ty + .7 * r} M${.26 * r} ${ty} L${.08 * r} ${ty + .7 * r}" stroke="${C.ink}" stroke-width="3.5" fill="none"/>
+     <circle cx="0" cy="${ty + .85 * r}" r="${.04 * r}" fill="${C.ink}"/><circle cx="0" cy="${ty + 1.1 * r}" r="${.04 * r}" fill="${C.ink}"/>
+     <path d="M${.36 * r} ${ty + .38 * r} h${.2 * r}" stroke="#fff" stroke-width="4"/>`;
+  else if (kind === 'hood' || kind === 'kid') detail = `<path d="M${-.12 * r} ${ty + .06 * r} v${.42 * r} M${.12 * r} ${ty + .06 * r} v${.42 * r}" stroke="#eee" stroke-width="3.5" stroke-linecap="round"/>
+     <path d="M${-.45 * r} ${ty + .85 * r} h${.9 * r} l${.08 * r} ${.4 * r} h${-1.06 * r}z" fill="${dark}" stroke="${C.ink}" stroke-width="3"/>${hem}`;
+  else if (kind === 'tyoma') detail = `<path d="M${-.2 * r} ${ty - 2} L0 ${ty + .2 * r} L${.2 * r} ${ty - 2}" fill="#fff" stroke="${C.ink}" stroke-width="3.5" stroke-linejoin="round"/>
+     <path d="M0 ${ty + .2 * r} V${ty + Math.min(th, 1.5 * r)}" stroke="${C.ink}" stroke-width="2.5"/>${[.4, .7, 1.0].map(k => `<circle cx="${.05 * r}" cy="${ty + k * r}" r="${.035 * r}" fill="#fff" stroke="${C.ink}" stroke-width="2"/>`).join('')}
+     <rect x="${-.5 * r}" y="${ty + .35 * r}" width="${.26 * r}" height="${.24 * r}" rx="3" fill="none" stroke="${C.ink}" stroke-width="2.5"/><rect x="${-.46 * r}" y="${ty + .3 * r}" width="${.04 * r}" height="${.14 * r}" fill="#3d7bff"/>`;
+  else if (kind === 'granny') detail = `${[.3, .6, .9, 1.2].map(k => `<circle cx="0" cy="${ty + k * r}" r="${.04 * r}" fill="#f2c53d" stroke="${C.ink}" stroke-width="2"/>`).join('')}<path d="M${-.22 * r} ${ty} q${.22 * r} ${.2 * r} ${.44 * r} 0" fill="#fff" stroke="${C.ink}" stroke-width="3"/>`;
+  else detail = `<path d="M0 ${ty + .24 * r} V${ty + Math.min(th, 1.5 * r) - 4}" stroke="${C.ink}" stroke-width="2.5" stroke-dasharray="5 5" opacity=".55"/>
+     <path d="M${-.32 * r} ${ty - 2} L0 ${ty + .3 * r} L${.32 * r} ${ty - 2}" fill="${kind === 'hero' ? C.jacketD : dark}" stroke="${C.ink}" stroke-width="3.5" stroke-linejoin="round"/>
+     ${legs || th < 3 * r ? `<path d="M${-.52 * r} ${ty + 1.0 * r} h${.3 * r} M${.22 * r} ${ty + 1.0 * r} h${.3 * r}" stroke="${C.ink}" stroke-width="3" stroke-linecap="round"/>` : `<path d="M${-.52 * r} ${ty + 1.0 * r} h${.3 * r} M${.22 * r} ${ty + 1.0 * r} h${.3 * r}" stroke="${C.ink}" stroke-width="3" stroke-linecap="round"/>`}
+     ${kind === 'hero' ? `<rect x="${.34 * r}" y="${ty + .34 * r}" width="${.14 * r}" height="${.06 * r}" rx="2" fill="${C.yel}" stroke="${C.ink}" stroke-width="2"/>` : ''}${hem}`;
+  const aw = .24 * r;
+  const shoulder = side => [side * (tw - .06 * r), ty + .2 * r];
+  const arm = (side, hx, hy, cx2, cy2) => {
+    const [sx, sy] = shoulder(side);
+    const d = `M${sx} ${sy} Q${cx2} ${cy2} ${hx} ${hy}`;
+    return `<path d="${d}" stroke="${C.ink}" stroke-width="${aw + 8}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${body}" stroke-width="${aw}" fill="none" stroke-linecap="round"/>`;
+  };
+  const hand = (hx, hy, side = 1) => `<g><circle cx="${hx}" cy="${hy}" r="${.14 * r}" fill="#fff" stroke="${C.ink}" stroke-width="3.5"/><ellipse cx="${hx - side * .1 * r}" cy="${hy - .06 * r}" rx="${.06 * r}" ry="${.045 * r}" fill="#fff" stroke="${C.ink}" stroke-width="3" transform="rotate(${-side * 30} ${hx - side * .1 * r} ${hy - .06 * r})"/></g>`;
+  const down = side => { const sw2 = walk ? Math.sin(walk) * .14 * r * side : 0; return [side * (tw + .06 * r) + sw2, ty + 1.3 * r]; };
+  let arms = '', front = '';
+  const hang = side => { const [hx, hy] = down(side); return arm(side, hx, hy, side * (tw + .12 * r), ty + .75 * r); };
+  const hangH = side => { const [hx, hy] = down(side); return hand(hx, hy, side); };
+  if (pose === 'stand') { arms = hang(-1) + hang(1); front = hangH(-1) + hangH(1); }
+  else if (pose === 'box') {
+    const bw = 1.35 * r, bh = .85 * r, by = ty + .6 * r;
+    arms = arm(-1, -bw / 2 + 4, by + bh * .5, -tw - .1 * r, ty + .7 * r) + arm(1, bw / 2 - 4, by + bh * .5, tw + .1 * r, ty + .7 * r);
+    front = `<g><rect x="${-bw / 2}" y="${by}" width="${bw}" height="${bh}" rx="6" fill="#c99158" stroke="${C.ink}" stroke-width="4.5"/>
+      <path d="M${-bw / 2} ${by + .16 * r} H${bw / 2}" stroke="${C.ink}" stroke-width="3"/><rect x="${-.1 * r}" y="${by}" width="${.2 * r}" height="${bh}" fill="#e2b781" opacity=".8"/>
+      <path d="M${-bw * .3} ${by} l${-.08 * r} ${-.3 * r} l${.26 * r} ${.06 * r}z" fill="#3d7bff" stroke="${C.ink}" stroke-width="3"/>
+      <rect x="${bw * .1}" y="${by - .36 * r}" width="${.18 * r}" height="${.38 * r}" rx="4" fill="#59b36b" stroke="${C.ink}" stroke-width="3"/></g>` +
+      hand(-bw / 2 + 4, by + bh * .5, -1) + hand(bw / 2 - 4, by + bh * .5, 1);
+  } else if (pose === 'mug') {
+    arms = hang(-1) + arm(1, .5 * r, ty + .1 * r, tw + .3 * r, ty + .9 * r);
+    front = hangH(-1) + mug(.5 * r + .26 * r, ty - .08 * r, r * .8) + hand(.5 * r, ty + .1 * r, 1);
+  } else if (pose === 'ear') {
+    arms = hang(-1) + arm(1, .78 * r, .05 * r, tw + .45 * r, ty + .6 * r);
+    front = hangH(-1) + `<rect x="${.6 * r}" y="${-.5 * r}" width="${.26 * r}" height="${.56 * r}" rx="8" fill="${C.ink}" transform="rotate(25 ${.73 * r} ${-.2 * r})"/>` + hand(.78 * r, .05 * r, 1);
+  } else if (pose === 'wide') {
+    arms = arm(-1, -tw - .85 * r, ty + .15 * r, -tw - .45 * r, ty + .1 * r) + arm(1, tw + .85 * r, ty + .15 * r, tw + .45 * r, ty + .1 * r);
+    front = hand(-tw - .85 * r, ty + .15 * r, 1) + hand(tw + .85 * r, ty + .15 * r, -1);
+  } else if (pose === 'up') {
+    arms = hang(-1) + arm(1, tw + .25 * r, -1.6 * r, tw + .5 * r, ty * .1);
+    front = hangH(-1) + hand(tw + .25 * r, -1.6 * r, 1);
+  } else if (pose === 'phone') {
+    arms = arm(-1, -.12 * r, ty + .3 * r, -tw - .1 * r, ty + 1.1 * r) + arm(1, .25 * r, ty + .3 * r, tw + .1 * r, ty + 1.1 * r);
+  }
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${flip ? -sc : sc},${sc})">${legsS}${torso}${detail}${neck}${arms}
     ${head({ ...o, x: 0, y: 0, flip: false })}${front}</g>`;
 }
 function mug(x, y, s = 60) {
@@ -328,7 +349,8 @@ function stripesBG(t, a = '#1b1440', b = '#231a55') {
   return s;
 }
 function desk(x, y, w, h = 300, top = '#b07447', front = '#8d5a36') {
-  return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${front}" stroke="${C.ink}" stroke-width="5"/>
+  h = Math.max(h, 1000);
+  return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${front}" stroke="${C.ink}" stroke-width="5"/><rect x="${x}" y="${y + 8}" width="${w}" height="14" fill="#000" opacity=".12"/>
    <rect x="${x - 14}" y="${y - 26}" width="${w + 28}" height="34" rx="6" fill="${top}" stroke="${C.ink}" stroke-width="5"/></g>`;
 }
 function drawer(x, y, w = 150, h = 70) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#9c6640" stroke="${C.ink}" stroke-width="4"/><rect x="${x + w / 2 - 22}" y="${y + h / 2 - 5}" width="44" height="10" rx="5" fill="${C.ink}"/>`; }
