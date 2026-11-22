@@ -264,12 +264,19 @@ function person(o) {
   const PANTS = { hero: '#2f3a4f', boss: '#232a40', tyoma: '#3b3f4a', hood: '#1f1d24', dad: '#3a3f55', kid: '#4f7fb8', granny: '#5a4466', colA: '#2f3a4f', colB: '#2f3a4f' };
   const body = o.bodyCol || BODY[kind] || C.jacket;
   const dark = 'rgba(0,0,0,.16)';
-  const ty = 1.0 * r, tw = .76 * r, th = legs ? 1.5 * r : 6 * r, wb = .7 * r;
+  const sit = !!o.sit; const ty = 1.0 * r, tw = .76 * r, th = 1.5 * r, wb = .7 * r;
   const lg = walk ? Math.sin(walk) * .2 * r : 0;
   const lw = .3 * r, ll = 1.3 * r, hip = ty + th - .05 * r;
   const pants = PANTS[kind] || C.pants;
   let legsS = '';
-  if (legs) {
+  if (sit) {
+    const kn = hip + .2 * r, sl = 1.05 * r;
+    const thigh = cx => `<rect x="${cx - .17 * r}" y="${hip - .12 * r}" width="${.34 * r}" height="${.42 * r}" rx="${.15 * r}" fill="${pants}" stroke="${C.ink}" stroke-width="4"/>`;
+    const shin = cx => `<rect x="${cx - .14 * r}" y="${kn}" width="${.28 * r}" height="${sl}" rx="8" fill="${pants}" stroke="${C.ink}" stroke-width="4"/>`;
+    const shoeF = cx => `<path d="M${cx - .2 * r} ${kn + sl + .02 * r} q0 ${-.16 * r} ${.2 * r} ${-.16 * r} q${.2 * r} 0 ${.2 * r} ${.16 * r}z" fill="#fff" stroke="${C.ink}" stroke-width="4"/><rect x="${cx - .21 * r}" y="${kn + sl}" width="${.42 * r}" height="${.07 * r}" rx="3" fill="#cfd0d8" stroke="${C.ink}" stroke-width="3"/>`;
+    legsS = `<ellipse cx="0" cy="${kn + sl + .1 * r}" rx="${.8 * r}" ry="${.1 * r}" fill="#000" opacity=".18"/>` + shin(-.2 * r) + shin(.2 * r) + shoeF(-.2 * r) + shoeF(.2 * r);
+    o._thighs = thigh(-.19 * r) + thigh(.19 * r);
+  } else {
     const leg = (cx, off) => `<path d="M${cx - lw / 2 + off} ${hip - 10} h${lw} l${-off * .2} ${ll} h${-lw}z" fill="${pants}" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"/>`;
     const shoe = (cx, off) => { const fx = cx + off * .8, fy = hip + ll; return `<path d="M${fx - .2 * r} ${fy - .02 * r} q0 ${-.14 * r} ${.18 * r} ${-.14 * r} h${.06 * r} q${.2 * r} 0 ${.22 * r} ${.14 * r} v${.05 * r} h${-.46 * r}z" fill="#fff" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"/><rect x="${fx - .2 * r}" y="${fy + .02 * r}" width="${.46 * r}" height="${.06 * r}" rx="3" fill="#cfd0d8" stroke="${C.ink}" stroke-width="3"/><path d="M${fx - .02 * r} ${fy - .1 * r} l${.06 * r} 0 M${fx} ${fy - .06 * r} l${.06 * r} 0" stroke="${C.ink}" stroke-width="2.5"/>`; };
     legsS = `<ellipse cx="0" cy="${hip + ll + .1 * r}" rx="${.75 * r}" ry="${.12 * r}" fill="#000" opacity=".18"/>` +
@@ -278,7 +285,7 @@ function person(o) {
   const torso = `<path d="M${-wb} ${ty + th} L${-tw} ${ty + .32 * r} Q${-tw} ${ty} ${-tw * .5} ${ty - .02 * r} H${tw * .5} Q${tw} ${ty} ${tw} ${ty + .32 * r} L${wb} ${ty + th} Z" fill="${body}" stroke="${C.ink}" stroke-width="4.5" stroke-linejoin="round"/>`;
   const neck = `<rect x="${-.13 * r}" y="${.8 * r}" width="${.26 * r}" height="${.3 * r}" fill="#fff" stroke="${C.ink}" stroke-width="4"/>`;
   let detail = '';
-  const hem = legs ? `<path d="M${-wb + 2} ${ty + th - .14 * r} H${wb - 2}" stroke="${dark}" stroke-width="${.1 * r}"/>` : '';
+  const hem = true ? `<path d="M${-wb + 2} ${ty + th - .14 * r} H${wb - 2}" stroke="${dark}" stroke-width="${.1 * r}"/>` : '';
   if (isBoss) detail = `<path d="M${-.26 * r} ${ty - 2} L0 ${ty + .62 * r} L${.26 * r} ${ty - 2}Z" fill="#fff" stroke="${C.ink}" stroke-width="3.5"/>
      <path d="M${-.07 * r} ${ty + .08 * r} H${.07 * r} L${.09 * r} ${ty + .52 * r} L0 ${ty + .64 * r} L${-.09 * r} ${ty + .52 * r}Z" fill="${C.tie}" stroke="${C.ink}" stroke-width="3"/>
      <path d="M${-.26 * r} ${ty} L${-.08 * r} ${ty + .7 * r} M${.26 * r} ${ty} L${.08 * r} ${ty + .7 * r}" stroke="${C.ink}" stroke-width="3.5" fill="none"/>
@@ -292,7 +299,7 @@ function person(o) {
   else if (kind === 'granny') detail = `${[.3, .6, .9, 1.2].map(k => `<circle cx="0" cy="${ty + k * r}" r="${.04 * r}" fill="#f2c53d" stroke="${C.ink}" stroke-width="2"/>`).join('')}<path d="M${-.22 * r} ${ty} q${.22 * r} ${.2 * r} ${.44 * r} 0" fill="#fff" stroke="${C.ink}" stroke-width="3"/>`;
   else detail = `<path d="M0 ${ty + .24 * r} V${ty + Math.min(th, 1.5 * r) - 4}" stroke="${C.ink}" stroke-width="2.5" stroke-dasharray="5 5" opacity=".55"/>
      <path d="M${-.32 * r} ${ty - 2} L0 ${ty + .3 * r} L${.32 * r} ${ty - 2}" fill="${kind === 'hero' ? C.jacketD : dark}" stroke="${C.ink}" stroke-width="3.5" stroke-linejoin="round"/>
-     ${legs || th < 3 * r ? `<path d="M${-.52 * r} ${ty + 1.0 * r} h${.3 * r} M${.22 * r} ${ty + 1.0 * r} h${.3 * r}" stroke="${C.ink}" stroke-width="3" stroke-linecap="round"/>` : `<path d="M${-.52 * r} ${ty + 1.0 * r} h${.3 * r} M${.22 * r} ${ty + 1.0 * r} h${.3 * r}" stroke="${C.ink}" stroke-width="3" stroke-linecap="round"/>`}
+     ${true ? `<path d="M${-.52 * r} ${ty + 1.0 * r} h${.3 * r} M${.22 * r} ${ty + 1.0 * r} h${.3 * r}" stroke="${C.ink}" stroke-width="3" stroke-linecap="round"/>` : `<path d="M${-.52 * r} ${ty + 1.0 * r} h${.3 * r} M${.22 * r} ${ty + 1.0 * r} h${.3 * r}" stroke="${C.ink}" stroke-width="3" stroke-linecap="round"/>`}
      ${kind === 'hero' ? `<rect x="${.34 * r}" y="${ty + .34 * r}" width="${.14 * r}" height="${.06 * r}" rx="2" fill="${C.yel}" stroke="${C.ink}" stroke-width="2"/>` : ''}${hem}`;
   const aw = .24 * r;
   const shoulder = side => [side * (tw - .06 * r), ty + .2 * r];
@@ -330,7 +337,8 @@ function person(o) {
   } else if (pose === 'phone') {
     arms = arm(-1, -.12 * r, ty + .3 * r, -tw - .1 * r, ty + 1.1 * r) + arm(1, .25 * r, ty + .3 * r, tw + .1 * r, ty + 1.1 * r);
   }
-  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${flip ? -sc : sc},${sc})">${legsS}${torso}${detail}${neck}${arms}
+  const chairS = sit && o.chair !== false ? (() => { const sy = hip; return `<g fill="#8a5a36" stroke="${C.ink}" stroke-width="4"><rect x="${-.95 * r}" y="${ty + .15 * r}" width="${1.9 * r}" height="${hip - ty - .1 * r}" rx="${.12 * r}"/><rect x="${-.9 * r}" y="${sy + .1 * r}" width="${.1 * r}" height="${1.15 * r}"/><rect x="${.8 * r}" y="${sy + .1 * r}" width="${.1 * r}" height="${1.15 * r}"/><rect x="${-1.0 * r}" y="${sy - .04 * r}" width="${2.0 * r}" height="${.18 * r}" rx="6" fill="#a06a40"/></g>`; })() : '';
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${flip ? -sc : sc},${sc})">${chairS}${legsS}${torso}${detail}${o._thighs || ''}${neck}${arms}
     ${head({ ...o, x: 0, y: 0, flip: false })}${front}</g>`;
 }
 function mug(x, y, s = 60) {
@@ -383,4 +391,25 @@ function burst(t, t0, x, y, col = '#fff', n = 14, R1 = 140, R2 = 330) {
     s += `<line x1="${x + Math.cos(a) * r1}" y1="${y + Math.sin(a) * r1}" x2="${x + Math.cos(a) * r2}" y2="${y + Math.sin(a) * r2}" stroke="${col}" stroke-width="${8 * (1 - k)}" stroke-linecap="round"/>`;
   }
   return s;
+}
+
+// seated person whose feet rest on floorY (chair included)
+function seated(o) { const r = o.r || 60; return person({ ...o, sit: true, y: o.floor - 3.83 * r }); }
+const seatTop = (floor, r) => floor - 3.83 * r + 2.5 * r - .4 * r; // table top height for a seated person
+// open dining table on two legs
+function openTable(x1, x2, top, floor, col = '#c98c55') {
+  return `<g><ellipse cx="${(x1 + x2) / 2}" cy="${floor + 6}" rx="${(x2 - x1) / 2}" ry="14" fill="#000" opacity=".12"/>
+   <rect x="${x1 + 30}" y="${top + 20}" width="26" height="${floor - top - 20}" fill="#8d5a36" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="${x2 - 56}" y="${top + 20}" width="26" height="${floor - top - 20}" fill="#8d5a36" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="${x1 + 20}" y="${top + 18}" width="${x2 - x1 - 40}" height="24" fill="#a06a40" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="${x1}" y="${top - 6}" width="${x2 - x1}" height="30" rx="8" fill="${col}" stroke="${C.ink}" stroke-width="5"/></g>`;
+}
+// office desk: top, side panel on the left, drawer pedestal on the right, open knee space
+function officeDesk(x1, x2, top, floor) {
+  const pw = 160;
+  return `<g><rect x="${x1 + 20}" y="${top + 20}" width="22" height="${floor - top - 20}" fill="#7a4b2c" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="${x2 - pw - 20}" y="${top + 20}" width="${pw}" height="${floor - top - 20}" fill="#8d5a36" stroke="${C.ink}" stroke-width="4"/>
+   ${[0, 1, 2].map(i => `<rect x="${x2 - pw - 8}" y="${top + 34 + i * (floor - top - 40) / 3}" width="${pw - 24}" height="${(floor - top - 40) / 3 - 12}" rx="5" fill="#9c6640" stroke="${C.ink}" stroke-width="3"/><rect x="${x2 - pw / 2 - 40}" y="${top + 34 + i * (floor - top - 40) / 3 + 14}" width="40" height="8" rx="4" fill="${C.ink}"/>`).join('')}
+   <rect x="${x1 + 30}" y="${top + 18}" width="${x2 - x1 - pw - 60}" height="22" fill="#7a4b2c" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="${x1}" y="${top - 8}" width="${x2 - x1}" height="32" rx="6" fill="#b07447" stroke="${C.ink}" stroke-width="5"/></g>`;
 }

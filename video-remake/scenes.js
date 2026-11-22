@@ -82,19 +82,19 @@ const S2 = {
     const lt = t - this.s;
     const land = 3.15;
     const pk = eOut(P(t, 2.5, .65));
-    const px = lerp(520, 400, pk), py = lerp(1450, 930, pk), pr = lerp(25, -6, pk);
+    const px = lerp(520, 400, pk), py = lerp(1450, seatTop(1000, 92) + 40, pk), pr = lerp(25, -6, pk);
     const [sx, sy] = shake(t, land, .25, 10);
     const [sx2, sy2] = shake(t, 3.95, .3, 16);
     const surprised = t > 4.5;
     const scene = bossOfficeBG() +
-      person({ x: 360, y: 600, r: 92, kind: 'boss', pose: 'stand', legs: false, e: { eyes: surprised ? 'wide' : 'half', brow: surprised ? 'up' : 'flat', mouth: surprised ? 'o' : 'line', look: surprised ? [0, -.3] : [.3, 1], sweat: surprised } }) +
-      desk(-40, 890, 800, 500) + drawer(470, 960, 180, 80) +
-      `<g transform="translate(110,860)"><rect x="-55" y="-60" width="110" height="80" rx="6" fill="#fff" stroke="${C.ink}" stroke-width="5"/><rect x="-55" y="-60" width="110" height="24" fill="${C.red}" stroke="${C.ink}" stroke-width="5"/></g>` +
-      mug(610, 845, 80) +
+      seated({ x: 360, floor: 1000, r: 92, kind: 'boss', pose: 'stand', e: { eyes: surprised ? 'wide' : 'half', brow: surprised ? 'up' : 'flat', mouth: surprised ? 'o' : 'line', look: surprised ? [0, -.3] : [.3, 1], sweat: surprised } }) +
+      officeDesk(-40, 760, seatTop(1000, 92), 1000) +
+      `<g transform="translate(110,${seatTop(1000, 92) - 8})"><rect x="-55" y="-60" width="110" height="80" rx="6" fill="#fff" stroke="${C.ink}" stroke-width="5"/><rect x="-55" y="-60" width="110" height="24" fill="${C.red}" stroke="${C.ink}" stroke-width="5"/></g>` +
+      mug(610, seatTop(1000, 92) - 36, 80) +
       // hand + sleeve sliding paper in
       `<g>${paperDoc(px, py, pr)}</g>` +
       (pk < 1 || t < land + .35 ? `<g transform="translate(${px + 30},${py + 90 + 200 * P(t, land + .05, .3)}) rotate(-12)"><path d="M0 0 L20 300" stroke="${C.ink}" stroke-width="64" stroke-linecap="round"/><path d="M0 0 L20 300" stroke="${C.jacket}" stroke-width="54" stroke-linecap="round"/><rect x="-30" y="20" width="62" height="22" rx="8" fill="${C.jacketD}" stroke="${C.ink}" stroke-width="4"/><circle r="26" fill="#fff" stroke="${C.ink}" stroke-width="4"/><ellipse cx="-22" cy="-8" rx="10" ry="7" fill="#fff" stroke="${C.ink}" stroke-width="3"/></g>` : '') +
-      stamp(t, 3.95, 400, 950, 'УВОЛЬНЕНИЕ', C.red, -12, 32);
+      stamp(t, 3.95, 400, seatTop(1000, 92) + 60, 'УВОЛЬНЕНИЕ', C.red, -12, 32);
     const z = lerp(1, 1.18, eIO(P(t, 2.4, 3.2)));
     return cam(scene, { z, cx: 380, cy: 820, sx: sx + sx2, sy: sy + sy2 }) +
       KT(t, 4.6, 5.5, '!', { x: 520, y: 380, size: 90, fill: C.yel, rot: 10 }, 'pop');
@@ -104,11 +104,11 @@ const S2 = {
 // ===== S3: character sheet (25 y.o., 3 years, manager) =====
 function heroAtDesk(t, e, extra = '', o = {}) {
   return openSpaceBG(t) +
-    person({ x: o.hx ?? 420, y: 720, r: 88, kind: 'hero', legs: false, e }) +
-    desk(-40, 950, 800, 400) + drawer(560, 1020, 150, 70) +
-    monitor(60, 780, 230, 160, t) +
-    `<rect x="300" y="905" width="170" height="22" rx="6" fill="#d9d7df" stroke="${C.ink}" stroke-width="4"/>` +
-    coffeeCup(620, 890, 1, t) + extra;
+    seated({ x: o.hx ?? 420, floor: 1060, r: 88, kind: 'hero', e }) +
+    officeDesk(-40, 760, seatTop(1060, 88), 1060) +
+    monitor(60, seatTop(1060, 88) - 205, 230, 160, t) +
+    `<rect x="300" y="${seatTop(1060, 88) - 24}" width="170" height="20" rx="6" fill="#d9d7df" stroke="${C.ink}" stroke-width="4"/>` +
+    coffeeCup(620, seatTop(1060, 88) - 38, 1, t) + extra;
 }
 function statRow(t, t0, i, label, value, col = C.yel) {
   if (t < t0) return '';
@@ -201,7 +201,7 @@ const S5 = {
       <rect x="-60" y="0" width="120" height="70" rx="10" fill="#fff" opacity=".25"/></g>`;
     const scene = `<rect x="-400" y="-400" width="1520" height="2080" fill="#3a2f4a"/>` + openSpaceBG(t).replace('fill="#ebe2d1"', 'fill="#cfc4b4"') +
       `<rect x="-400" y="-400" width="1520" height="2080" fill="#120c22" opacity=".45"/>` + glow +
-      person({ x: 330, y: 700, r: 140, kind: 'hero', legs: false, pose: 'stand', e }) + phone;
+      person({ x: 330, y: 700, r: 140, kind: 'hero', pose: 'stand', e }) + phone;
     let out = cam(scene, { z, cx: 340, cy: 700 });
     // release timer reveal: big at center, then docks into HUD
     if (t >= 16.1 && t < 18.0) {
@@ -225,7 +225,7 @@ const S6 = {
     const talking = win(t, 21.3, 23.5);
     const e = { eyes: up > .5 ? 'open' : 'half', brow: up > .5 ? 'up' : 'flat', mouth: talking ? 'talk' : 'line', open: env(t) * 1.6, look: [0, lerp(1, -.2, up)] };
     const z = lerp(1.0, 1.1, eIO(P(t, 19.5, 4)));
-    const scene = bossOfficeBG() + person({ x: 360, y: 780, r: 150, kind: 'boss', pose: 'mug', legs: false, e }) + desk(-40, 1120, 800, 300);
+    const scene = bossOfficeBG() + seated({ x: 360, floor: 1400, r: 150, kind: 'boss', pose: 'mug', e }) + officeDesk(-40, 760, seatTop(1400, 150), 1400);
     return cam(scene, { z, cx: 360, cy: 800 }) +
       KTag(t, 19.75, 21.2, 'НАЧАЛЬНИК', { x: 360, y: 400, size: 26, bg: C.red, fg: '#fff', rot: -3 }) +
       dialog(t, { t0: 21.3, t1: 23.55, name: 'НАЧАЛЬНИК', nameBg: C.red, text: 'И чем ты теперь\nсобираешься *заниматься*?', y: 250, cps: 24 });
@@ -239,7 +239,7 @@ const S7 = {
     const e = { eyes: talking ? 'open' : 'half', brow: 'sly', mouth: talking ? 'talk' : 'smirk', open: env(t) * 1.6, look: [0, 0], blush: false };
     const z = t > 25.2 ? lerp(1.0, 1.25, eOut(P(t, 25.2, .3))) : 1.0;
     const [sx, sy] = shake(t, 25.25, .35, 18);
-    const scene = openSpaceBG(t) + person({ x: 360, y: 760, r: 150, kind: 'hero', legs: false, pose: 'stand', e });
+    const scene = openSpaceBG(t) + person({ x: 360, y: 760, r: 150, kind: 'hero', pose: 'stand', e });
     let out = cam(scene, { z, cx: 360, cy: 760, sx, sy });
     out += KTag(t, 23.8, 25.1, 'СПОКОЙНО', { x: 520, y: 400, size: 24, bg: '#fff', rot: 4 }, 'rise');
     if (t > 25.2) out += `<rect width="${W}" height="${H}" fill="#fff" opacity="${clamp(1 - (t - 25.2) * 8) * .8}"/>` + burst(t, 25.2, 360, 360, C.yel, 18) +
@@ -260,8 +260,8 @@ const S8 = {
     }).join('');
     const scene = bossOfficeBG() + `<rect x="-400" y="700" width="1520" height="300" fill="#93a4bb" stroke="${C.ink}" stroke-width="5"/>` + cols +
       `<rect x="-400" y="760" width="1520" height="240" fill="#93a4bb"/><rect x="-400" y="760" width="1520" height="6" fill="${C.ink}"/>` +
-      person({ x: 210, y: 900, r: 85, kind: 'boss', pose: 'mug', legs: false, e: { eyes: 'wide', brow: 'up', mouth: 'wavy', look: [1, 0], sweat: true } }) +
-      desk(-40, 1080, 480, 300) +
+      seated({ x: 210, floor: 1232, r: 85, kind: 'boss', pose: 'mug', e: { eyes: 'wide', brow: 'up', mouth: 'wavy', look: [1, 0], sweat: true } }) +
+      officeDesk(-40, 440, seatTop(1232, 85), 1232) +
       person({ x: 560, y: 920, r: 80, kind: 'hero', pose: 'stand', e: { eyes: 'half', brow: 'sly', mouth: 'smirk', look: [-1, 0] } });
     const z = lerp(1.05, 1.0, eOut(P(t, 26.7, .4)));
     const sat = frozen ? `<filter id="gs"><feColorMatrix type="saturate" values="${lerp(1, .15, P(t, 26.85, .15))}"/></filter>` : '';
@@ -289,7 +289,7 @@ const S9 = {
     const talking = win(t, 32.2, 35.3);
     const e = { eyes: 'half', brow: 'sly', mouth: talking ? 'talk' : 'smirk', open: env(t) * 1.6, look: [-.3, 0] };
     const z = lerp(1.15, 1.3, eIO(P(t, 31.2, 4.3)));
-    const scene = bossOfficeBG() + person({ x: 360, y: 800, r: 150, kind: 'boss', pose: 'mug', legs: false, e }) + desk(-40, 1140, 800, 300);
+    const scene = bossOfficeBG() + seated({ x: 360, floor: 1420, r: 150, kind: 'boss', pose: 'mug', e }) + officeDesk(-40, 760, seatTop(1420, 150), 1420);
     return cam(scene, { z, cx: 360, cy: 820 }) +
       KT(t, 31.35, 32.15, 'ХМ.', { x: 560, y: 470, size: 60, rot: 8 }, 'pop') +
       dialog(t, { t0: 32.2, t1: 35.45, name: 'НАЧАЛЬНИК', nameBg: C.red, text: 'Через месяц _приползёшь_\nобратно. Место я придержу.', y: 250, cps: 21 });
