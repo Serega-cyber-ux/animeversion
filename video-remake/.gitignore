@@ -1,0 +1,4 @@
+node_modules/
+assets/voice.wav
+out/*
+!out/pilot.mp4

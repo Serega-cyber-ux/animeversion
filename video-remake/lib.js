@@ -1,0 +1,346 @@
+// ===== core helpers =====
+const W = 720, H = 1280, FPS = 30;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const P = (t, s, d) => clamp((t - s) / d);
+const eOut = x => 1 - Math.pow(1 - x, 3);
+const eIn = x => x * x * x;
+const eIO = x => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const eBack = x => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const win = (t, a, b) => t >= a && t < b;
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+let _uid = 0; const uid = p => `${p || 'u'}${_uid++}`;
+const env = t => (window.ENV ? (window.ENV[Math.floor(t * FPS)] || 0) : 0);
+// deterministic shake that decays after t0
+function shake(t, t0, dur = .35, amp = 14) {
+  if (t < t0 || t > t0 + dur) return [0, 0];
+  const k = 1 - (t - t0) / dur, a = amp * k * k;
+  return [Math.sin(t * 91) * a, Math.cos(t * 77) * a];
+}
+
+const C = {
+  ink: '#1c1a24', white: '#ffffff', yel: '#FFD23F', red: '#FF4757', grn: '#2ED47A', blue: '#3D7BFF',
+  hair: '#6b4a2f', jacket: '#7f8f4e', jacketD: '#67763c', boss: '#2e3650', tie: '#e03b3b',
+  pants: '#2a2733', mouth: '#5b1c26', tongue: '#ef7d86', blush: '#ffb3b3', dark: '#16131f',
+};
+
+// text measuring (fonts must be loaded)
+const _cv = document.createElement('canvas').getContext('2d');
+function measure(text, size, fam = 'Unbounded', weight = 900) {
+  _cv.font = `${weight} ${size}px ${fam}`; return _cv.measureText(text).width;
+}
+const FAM = { U: 'Unbounded', R: 'Rubik' };
+
+// ===== typography =====
+// segs: string or [{t, c}] ; draws text with thick ink outline + hard drop shadow
+function T(segs, o = {}) {
+  const { x = 360, y = 640, size = 48, font = 'U', weight = 900, anchor = 'middle', fill = '#fff',
+    stroke = C.ink, sw = null, rot = 0, op = 1, sc = 1, ls = 0, shadow = 1 } = o;
+  if (typeof segs === 'string') segs = [{ t: segs, c: fill }];
+  const sw2 = sw ?? Math.max(4, size * .2);
+  const attrs = `font-family="${FAM[font]}" font-weight="${weight}" font-size="${size}" text-anchor="${anchor}" letter-spacing="${ls}" dy="0.36em" stroke-linejoin="round"`;
+  const spans = col => segs.map(s => `<tspan fill="${col || s.c || fill}">${esc(s.t)}</tspan>`).join('');
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${sc})" opacity="${op}">` +
+    (shadow ? `<text ${attrs} y="${size * .1}" stroke="${stroke}" stroke-width="${sw2}" fill="${stroke}">${spans(stroke)}</text>` : '') +
+    `<text ${attrs} stroke="${stroke}" stroke-width="${sw2}" paint-order="stroke">${spans()}</text></g>`;
+}
+// marker tag: colored slab with text
+function tag(text, o = {}) {
+  const { x = 360, y = 640, size = 30, bg = C.yel, fg = C.ink, rot = 0, sc = 1, op = 1, font = 'U', weight = 900, pad = .55, skew = -6 } = o;
+  const w = measure(text, size, FAM[font], weight) + size * pad * 2, h = size * 1.55;
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${sc})" opacity="${op}">
+   <g transform="skewX(${skew})"><rect x="${-w / 2 + 5}" y="${-h / 2 + 7}" width="${w}" height="${h}" rx="8" fill="${C.ink}"/>
+   <rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="8" fill="${bg}" stroke="${C.ink}" stroke-width="4"/></g>
+   <text font-family="${FAM[font]}" font-weight="${weight}" font-size="${size}" text-anchor="middle" dy="0.36em" fill="${fg}">${esc(text)}</text></g>`;
+}
+// animation envelope for kinetic text: returns {sc, op, rot, dy} or null if hidden
+function kin(t, t0, t1, type = 'slam', seed = 0) {
+  if (t < t0 || t > t1 + .2) return null;
+  const k = P(t, t0, type === 'slam' ? .17 : .28), x = P(t, t1, .16);
+  let sc = 1, op = 1, rot = 0, dy = 0;
+  if (type === 'slam') { sc = lerp(2.6, 1, eOut(k)); op = clamp(k * 4); rot = Math.sin((t - t0) * 30) * 5 * Math.exp(-(t - t0) * 8); }
+  else if (type === 'pop') { sc = eBack(k); op = clamp(k * 3); }
+  else if (type === 'rise') { dy = 40 * (1 - eOut(k)); op = k; }
+  else if (type === 'drop') { dy = -60 * (1 - eBack(k)); op = clamp(k * 3); }
+  sc *= 1 - .35 * eIn(x); op *= 1 - x;
+  // tiny breathing so text is never static
+  sc *= 1 + .015 * Math.sin((t - t0) * 4 + seed);
+  return { sc, op, rot, dy };
+}
+function KT(t, t0, t1, segs, o = {}, type = 'slam') {
+  const a = kin(t, t0, t1, type, o.seed || 0); if (!a) return '';
+  return T(segs, { ...o, sc: (o.sc || 1) * a.sc, op: a.op, rot: (o.rot || 0) + a.rot, y: (o.y ?? 640) + a.dy });
+}
+function KTag(t, t0, t1, text, o = {}, type = 'pop') {
+  const a = kin(t, t0, t1, type, o.seed || 0); if (!a) return '';
+  return tag(text, { ...o, sc: (o.sc || 1) * a.sc, op: a.op, rot: (o.rot || 0) + a.rot, y: (o.y ?? 640) + a.dy });
+}
+
+// game-style dialogue box with typewriter. text markup: *word* = yellow, _word_ = red
+function dialog(t, { t0, t1, name, text, y = 300, cps = 26, nameBg = C.yel, x = 36, w = 648 }) {
+  if (t < t0 - .05 || t > t1 + .25) return '';
+  const inK = eBack(P(t, t0 - .05, .25)), outK = P(t, t1, .2);
+  const lines = text.split('\n');
+  const toks = [];
+  lines.forEach((ln, li) => {
+    ln.split(/(\*[^*]+\*|_[^_]+_)/).filter(Boolean).forEach(s => {
+      let c = '#fff'; if (s[0] === '*') { c = C.yel; s = s.slice(1, -1); } else if (s[0] === '_') { c = C.red; s = s.slice(1, -1); }
+      toks.push({ s, c, li });
+    });
+  });
+  let n = Math.floor((t - t0) * cps); const lh = 46, h = lines.length * lh + 56;
+  const per = lines.map(() => []);
+  for (const tk of toks) { if (n <= 0) break; const s = tk.s.slice(0, n); n -= tk.s.length; per[tk.li].push(`<tspan fill="${tk.c}">${esc(s)}</tspan>`); }
+  const done = (t - t0) * cps >= toks.reduce((a, b) => a + b.s.length, 0);
+  const sc = lerp(.85, 1, inK) * (1 - .1 * outK), op = clamp(inK * 2) * (1 - outK);
+  const nw = measure(name, 20, 'Unbounded', 800) + 34;
+  return `<g transform="translate(${x + w / 2},${y + h / 2}) scale(${sc}) translate(${-w / 2},${-h / 2})" opacity="${op}">
+   <rect x="6" y="8" width="${w}" height="${h}" rx="22" fill="${C.ink}"/>
+   <rect width="${w}" height="${h}" rx="22" fill="#17141f" fill-opacity=".94" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="6" y="6" width="${w - 12}" height="${h - 12}" rx="17" fill="none" stroke="#ffffff" stroke-opacity=".14" stroke-width="2"/>
+   <g transform="translate(26,-20) rotate(-3)"><rect width="${nw}" height="40" rx="10" fill="${nameBg}" stroke="${C.ink}" stroke-width="4"/>
+   <text x="${nw / 2}" y="21" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="800" font-size="20" fill="${C.ink}">${esc(name)}</text></g>
+   ${per.map((sp, i) => `<text x="30" y="${44 + i * lh}" dy="0.36em" font-family="Rubik" font-weight="700" font-size="33" fill="#fff">${sp.join('')}</text>`).join('')}
+   ${done ? `<path d="M${w - 44} ${h - 30} l12 12 l12 -12z" fill="${C.yel}" opacity="${.4 + .6 * (Math.sin(t * 10) > 0)}"/>` : ''}
+  </g>`;
+}
+
+// quest popup (slides in from left)
+function objective(t, { t0, t1, title = 'НОВАЯ ЦЕЛЬ', text, y = 232, done = false, textAt = null }) {
+  if (t < t0 || t > t1 + .3) return '';
+  const k = eOut(P(t, t0, .35)), x = P(t, t1, .25);
+  const col = done ? C.grn : C.yel;
+  const w = Math.max(420, measure(text, 28, 'Unbounded', 800) + 120);
+  const off = lerp(-w - 40, 24, k) - eIn(x) * (w + 60);
+  const tk = textAt == null ? 1 : P(t, textAt, .2);
+  const icon = done
+    ? `<circle cx="44" cy="52" r="24" fill="${col}" stroke="${C.ink}" stroke-width="4"/><path d="M33 52 l8 9 l15 -17" fill="none" stroke="${C.ink}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<circle cx="44" cy="52" r="24" fill="${col}" stroke="${C.ink}" stroke-width="4"/><path d="${star(44, 52, 15, 6.5)}" fill="${C.ink}" transform="rotate(${(t - t0) * 90} 44 52)"/>`;
+  const strike = done ? `<rect x="84" y="${66 - 2}" width="${(w - 110) * eOut(P(t, t0 + .45, .35))}" height="5" fill="${C.grn}" rx="2"/>` : '';
+  return `<g transform="translate(${off},${y})">
+   <rect x="6" y="8" width="${w}" height="104" rx="18" fill="${C.ink}"/>
+   <rect width="${w}" height="104" rx="18" fill="#17141f" stroke="${C.ink}" stroke-width="4"/>
+   <rect width="12" height="104" rx="6" fill="${col}"/>
+   ${icon}
+   <text x="86" y="30" dy="0.36em" font-family="Rubik" font-weight="800" font-size="18" letter-spacing="2" fill="${col}">${esc(title)}</text>
+   <g opacity="${tk}" transform="translate(${(1 - eOut(tk)) * 30},0)"><text x="86" y="68" dy="0.36em" font-family="Unbounded" font-weight="800" font-size="27" fill="#fff">${esc(text)}</text>${strike}</g>
+  </g>`;
+}
+function star(cx, cy, R, r, n = 5) {
+  let d = '';
+  for (let i = 0; i < n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, rr = i % 2 ? r : R; d += (i ? 'L' : 'M') + (cx + Math.cos(a) * rr).toFixed(1) + ' ' + (cy + Math.sin(a) * rr).toFixed(1); }
+  return d + 'Z';
+}
+
+// ===== HUD =====
+const HUD = { y: 108, money: { x: 24, w: 262, h: 92 }, timer: { x: 298, w: 398, h: 92 } };
+const fmt$ = v => '$' + Math.round(v).toLocaleString('ru-RU').replace(/ |\s/g, ' ');
+function moneyCard(v, { x, y, sc = 1, op = 1, flash = 0 }) {
+  const w = HUD.money.w, h = HUD.money.h;
+  return `<g transform="translate(${x},${y}) scale(${sc})" opacity="${op}">
+   <rect x="5" y="7" width="${w}" height="${h}" rx="20" fill="${C.ink}"/>
+   <rect width="${w}" height="${h}" rx="20" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
+   <circle cx="44" cy="${h / 2}" r="25" fill="${C.yel}" stroke="${C.ink}" stroke-width="4"/>
+   <text x="44" y="${h / 2}" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="26" fill="${C.ink}">$</text>
+   <text x="84" y="28" dy="0.36em" font-family="Rubik" font-weight="800" font-size="15" letter-spacing="1.5" fill="#8a8796">НА СЧЕТУ</text>
+   <text x="84" y="60" dy="0.36em" font-family="Unbounded" font-weight="900" font-size="31" fill="${C.ink}">${fmt$(v)}</text>
+   ${flash ? `<rect width="${w}" height="${h}" rx="20" fill="#fff" opacity="${flash}"/>` : ''}
+  </g>`;
+}
+function timerCard(days, { x, y, sc = 1, op = 1, pulse = 0, t = 0 }) {
+  const w = HUD.timer.w, h = HUD.timer.h;
+  const segs = [0, 1, 2].map(i => {
+    const on = i < days;
+    return `<rect x="${22 + i * 82}" y="56" width="74" height="16" rx="5" fill="${on ? C.yel : '#3a3546'}" stroke="${C.ink}" stroke-width="3"/>`;
+  }).join('');
+  const glow = pulse ? `<rect x="-6" y="-6" width="${w + 12}" height="${h + 12}" rx="26" fill="none" stroke="${C.yel}" stroke-width="${6 * pulse}" opacity="${pulse}"/>` : '';
+  return `<g transform="translate(${x},${y}) scale(${sc})" opacity="${op}">
+   <rect x="5" y="7" width="${w}" height="${h}" rx="20" fill="${C.ink}"/>
+   <rect width="${w}" height="${h}" rx="20" fill="#17141f" stroke="${C.ink}" stroke-width="4"/>${glow}
+   <circle cx="30" cy="30" r="7" fill="${C.red}" opacity="${.35 + .65 * (Math.sin(t * 6) > -.2)}"/>
+   <text x="46" y="30" dy="0.36em" font-family="Rubik" font-weight="800" font-size="17" letter-spacing="1.5" fill="#fff">ДО РЕЛИЗА GTA 6</text>
+   ${segs}
+   <g transform="translate(${w - 108},12)"><rect width="94" height="68" rx="14" fill="${C.yel}" stroke="${C.ink}" stroke-width="4"/>
+   <text x="34" y="35" dy="0.36em" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="42" fill="${C.ink}">${days}</text>
+   <text x="72" y="35" dy="0.36em" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="15" fill="${C.ink}">ДНЯ</text></g>
+  </g>`;
+}
+
+// ===== characters =====
+// expr: {eyes:'open'|'half'|'wide'|'closed'|'happy'|'angry', brow:'flat'|'up'|'down'|'worried'|'sly', mouth:'line'|'smile'|'smirk'|'grin'|'o'|'frown'|'wavy'|'talk', open, look:[x,y], sweat, blush}
+function head(o) {
+  const { x = 0, y = 0, r = 60, kind = 'hero', flip = false } = o;
+  const e = { eyes: 'open', brow: 'flat', mouth: 'line', open: 0, look: [0, 0], ...o.e };
+  const id = uid('hc');
+  let hair = '';
+  if (kind === 'hero' || kind === 'colA' || kind === 'colB') {
+    const col = kind === 'hero' ? C.hair : kind === 'colA' ? '#d8743c' : '#2c2930';
+    hair = `<path clip-path="url(#${id})" fill="${col}" d="M${-1.3 * r} ${-1.3 * r} H${1.3 * r} V${.1 * r} L${.9 * r} ${.1 * r} Q${.86 * r} ${-.36 * r} ${.38 * r} ${-.36 * r} Q${.05 * r} ${-.5 * r} ${-.28 * r} ${-.32 * r} Q${-.8 * r} ${-.36 * r} ${-.9 * r} ${.1 * r} L${-1.3 * r} ${.1 * r}Z" stroke="${C.ink}" stroke-width="4"/>`;
+  } else if (kind === 'boss') {
+    hair = `<g clip-path="url(#${id})" fill="#b4b3bd" stroke="${C.ink}" stroke-width="4">
+      <ellipse cx="${-.98 * r}" cy="${-.02 * r}" rx="${.26 * r}" ry="${.36 * r}"/><ellipse cx="${.98 * r}" cy="${-.02 * r}" rx="${.26 * r}" ry="${.36 * r}"/></g>
+      <path d="M${-.35 * r} ${-.72 * r} q${.2 * r} ${-.12 * r} ${.42 * r} ${-.05 * r}" stroke="#e9e9ef" stroke-width="${.07 * r}" fill="none" stroke-linecap="round"/>`;
+  }
+  // eyes
+  const ex = .33 * r, ey = .06 * r, erx = .155 * r, ery = .185 * r;
+  const lk = e.look;
+  const eye = (cx) => {
+    if (e.eyes === 'closed') return `<path d="M${cx - erx} ${ey} q${erx} ${.12 * r} ${2 * erx} 0" fill="none" stroke="${C.ink}" stroke-width="${.06 * r}" stroke-linecap="round"/>`;
+    if (e.eyes === 'happy') return `<path d="M${cx - erx} ${ey + .04 * r} q${erx} ${-.2 * r} ${2 * erx} 0" fill="none" stroke="${C.ink}" stroke-width="${.065 * r}" stroke-linecap="round"/>`;
+    const k = e.eyes === 'wide' ? 1.22 : 1;
+    const px = cx + lk[0] * .06 * r, py = ey + lk[1] * .07 * r;
+    let s = `<ellipse cx="${cx}" cy="${ey}" rx="${erx * k}" ry="${ery * k}" fill="#fff" stroke="${C.ink}" stroke-width="${.055 * r}"/>
+      <circle cx="${px}" cy="${py}" r="${.085 * r * (e.eyes === 'wide' ? .8 : 1)}" fill="${C.ink}"/><circle cx="${px + .03 * r}" cy="${py - .03 * r}" r="${.022 * r}" fill="#fff"/>`;
+    if (e.eyes === 'half' || e.eyes === 'angry') {
+      const lid = e.eyes === 'half' ? .02 * r : -.02 * r;
+      const tilt = e.eyes === 'angry' ? (cx < 0 ? .09 * r : -.09 * r) : 0;
+      s += `<path d="M${cx - erx - 3} ${ey - ery - 6} H${cx + erx + 3} V${ey + lid - tilt} L${cx - erx - 3} ${ey + lid + tilt}Z" fill="#fff"/>
+        <path d="M${cx - erx} ${ey + lid + tilt} L${cx + erx} ${ey + lid - tilt}" stroke="${C.ink}" stroke-width="${.055 * r}" stroke-linecap="round"/>`;
+    }
+    return s;
+  };
+  // brows
+  const by = -.2 * r, bw = .17 * r;
+  const brow = (cx, side) => {
+    let a = 0, dy = 0, curve = -.05 * r;
+    if (e.brow === 'up') { dy = -.08 * r; curve = -.08 * r; }
+    if (e.brow === 'down') { a = side * 14; dy = .02 * r; curve = 0; }
+    if (e.brow === 'worried') { a = -side * 16; dy = -.04 * r; curve = 0; }
+    if (e.brow === 'sly') { a = side < 0 ? 0 : -14; dy = side < 0 ? 0 : -.06 * r; }
+    return `<path transform="rotate(${a} ${cx} ${by + dy})" d="M${cx - bw} ${by + dy} q${bw} ${curve} ${2 * bw} 0" fill="none" stroke="${C.ink}" stroke-width="${.06 * r}" stroke-linecap="round"/>`;
+  };
+  // mouth (anatomy: lips line, single smooth upper-teeth band, tongue on bottom)
+  const my = .44 * r;
+  let mouth = '';
+  const openMouth = (w, h, teeth = true) => {
+    const mid = uid('mc');
+    const d = `M${-w} ${my - .02 * r} Q0 ${my + .02 * r} ${w} ${my - .02 * r} Q${w * .9} ${my + h} 0 ${my + h} Q${-w * .9} ${my + h} ${-w} ${my - .02 * r}Z`;
+    return `<clipPath id="${mid}"><path d="${d}"/></clipPath><path d="${d}" fill="${C.mouth}"/>
+      <g clip-path="url(#${mid})">${teeth ? `<rect x="${-w}" y="${my - .1 * r}" width="${2 * w}" height="${.1 * r + Math.min(h * .32, .09 * r)}" rx="${.03 * r}" fill="#fff"/>` : ''}
+      <ellipse cx="0" cy="${my + h}" rx="${w * .62}" ry="${h * .42}" fill="${C.tongue}"/></g>
+      <path d="${d}" fill="none" stroke="${C.ink}" stroke-width="${.055 * r}" stroke-linejoin="round"/>`;
+  };
+  const sw = .058 * r;
+  switch (e.mouth) {
+    case 'line': mouth = `<path d="M${-.12 * r} ${my} H${.12 * r}" stroke="${C.ink}" stroke-width="${sw}" stroke-linecap="round"/>`; break;
+    case 'smile': mouth = `<path d="M${-.2 * r} ${my - .04 * r} Q0 ${my + .14 * r} ${.2 * r} ${my - .04 * r}" fill="none" stroke="${C.ink}" stroke-width="${sw}" stroke-linecap="round"/>`; break;
+    case 'smirk': mouth = `<path d="M${-.16 * r} ${my + .02 * r} Q${.04 * r} ${my + .1 * r} ${.2 * r} ${my - .07 * r}" fill="none" stroke="${C.ink}" stroke-width="${sw}" stroke-linecap="round"/>`; break;
+    case 'frown': mouth = `<path d="M${-.16 * r} ${my + .06 * r} Q0 ${my - .06 * r} ${.16 * r} ${my + .06 * r}" fill="none" stroke="${C.ink}" stroke-width="${sw}" stroke-linecap="round"/>`; break;
+    case 'wavy': mouth = `<path d="M${-.18 * r} ${my} q${.045 * r} ${-.07 * r} ${.09 * r} 0 t${.09 * r} 0 t${.09 * r} 0 t${.09 * r} 0" fill="none" stroke="${C.ink}" stroke-width="${sw * .85}" stroke-linecap="round"/>`; break;
+    case 'grin': mouth = openMouth(.27 * r, .26 * r); break;
+    case 'o': { const mid = uid('mo'); mouth = `<clipPath id="${mid}"><ellipse cx="0" cy="${my + .04 * r}" rx="${.09 * r}" ry="${.12 * r}"/></clipPath><ellipse cx="0" cy="${my + .04 * r}" rx="${.09 * r}" ry="${.12 * r}" fill="${C.mouth}"/><ellipse clip-path="url(#${mid})" cx="0" cy="${my + .15 * r}" rx="${.07 * r}" ry="${.05 * r}" fill="${C.tongue}"/><ellipse cx="0" cy="${my + .04 * r}" rx="${.09 * r}" ry="${.12 * r}" fill="none" stroke="${C.ink}" stroke-width="${sw}"/>`; break; }
+    case 'talk': {
+      const o2 = clamp(e.open);
+      mouth = o2 < .12 ? `<path d="M${-.14 * r} ${my} Q0 ${my + .05 * r} ${.14 * r} ${my}" fill="none" stroke="${C.ink}" stroke-width="${sw}" stroke-linecap="round"/>`
+        : openMouth(lerp(.13, .21, o2) * r, lerp(.08, .24, o2) * r, o2 > .35); break;
+    }
+  }
+  const extra = (e.blush ? `<ellipse cx="${-.58 * r}" cy="${.3 * r}" rx="${.14 * r}" ry="${.07 * r}" fill="${C.blush}" opacity=".8"/><ellipse cx="${.58 * r}" cy="${.3 * r}" rx="${.14 * r}" ry="${.07 * r}" fill="${C.blush}" opacity=".8"/>` : '') +
+    (e.sweat ? `<path d="M${.78 * r} ${-.35 * r} q${.1 * r} ${.18 * r} 0 ${.24 * r} q${-.1 * r} ${-.06 * r} 0 ${-.24 * r}z" fill="#6cc4ff" stroke="${C.ink}" stroke-width="3"/>` : '');
+  return `<g transform="translate(${x},${y}) scale(${flip ? -1 : 1},1)">
+    <clipPath id="${id}"><circle r="${r}"/></clipPath>
+    <circle r="${r}" fill="#fff"/>${hair}
+    <circle r="${r}" fill="none" stroke="${C.ink}" stroke-width="${.075 * r}"/>
+    ${eye(-ex)}${eye(ex)}${brow(-ex, -1)}${brow(ex, 1)}${mouth}${extra}
+  </g>`;
+}
+
+// full body. (x,y) = head center. pose: 'stand'|'box'|'hands'|'mug'
+function person(o) {
+  const { x = 0, y = 0, r = 60, kind = 'hero', pose = 'stand', legs = true, walk = 0, sc = 1, flip = false, rot = 0 } = o;
+  const isBoss = kind === 'boss';
+  const body = isBoss ? C.boss : kind === 'hero' ? C.jacket : kind === 'colA' ? '#4f7fb8' : '#8a5aa8';
+  const bodyD = isBoss ? '#232a40' : C.jacketD;
+  const tw = 1.0 * r, ty = .78 * r, th = 1.75 * r;
+  const lg = walk ? Math.sin(walk) * .18 * r : 0;
+  const legsS = legs ? `<g fill="${C.pants}" stroke="${C.ink}" stroke-width="4">
+     <rect x="${-.42 * r + lg}" y="${ty + th - 10}" width="${.34 * r}" height="${.85 * r}" rx="8"/>
+     <rect x="${.08 * r - lg}" y="${ty + th - 10}" width="${.34 * r}" height="${.85 * r}" rx="8"/></g>
+     <g fill="#fff" stroke="${C.ink}" stroke-width="4"><ellipse cx="${-.28 * r + lg}" cy="${ty + th + .78 * r}" rx="${.27 * r}" ry="${.13 * r}"/><ellipse cx="${.28 * r - lg}" cy="${ty + th + .78 * r}" rx="${.27 * r}" ry="${.13 * r}"/></g>` : '';
+  const torso = `<path d="M${-tw} ${ty + th} L${-tw * .98} ${ty + .4 * r} Q${-tw} ${ty} ${-tw * .55} ${ty} H${tw * .55} Q${tw} ${ty} ${tw * .98} ${ty + .4 * r} L${tw} ${ty + th} Z" fill="${body}" stroke="${C.ink}" stroke-width="4.5" stroke-linejoin="round"/>`;
+  let detail;
+  if (isBoss) detail = `<path d="M${-.3 * r} ${ty - 2} L0 ${ty + .75 * r} L${.3 * r} ${ty - 2}Z" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
+     <path d="M${-.08 * r} ${ty + .1 * r} L${.08 * r} ${ty + .1 * r} L${.1 * r} ${ty + .62 * r} L0 ${ty + .74 * r} L${-.1 * r} ${ty + .62 * r}Z" fill="${C.tie}" stroke="${C.ink}" stroke-width="3.5"/>`;
+  else detail = `<path d="M0 ${ty + .2 * r} V${ty + th - 6}" stroke="${bodyD}" stroke-width="4" stroke-dasharray="7 6"/>
+     <path d="M${-.42 * r} ${ty} L0 ${ty + .32 * r} L${.42 * r} ${ty}" fill="${bodyD}" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"/>
+     <rect x="${.48 * r}" y="${ty + .45 * r}" width="${.16 * r}" height="${.07 * r}" rx="3" fill="${C.yel}" stroke="${C.ink}" stroke-width="2"/>`;
+  const arm = (side, hx, hy, ex2, ey2) => {
+    const sx = side * tw * .86, sy = ty + .32 * r;
+    const d = `M${sx} ${sy} Q${ex2} ${ey2} ${hx} ${hy}`;
+    return `<path d="${d}" stroke="${C.ink}" stroke-width="${.36 * r + 9}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${body}" stroke-width="${.36 * r}" fill="none" stroke-linecap="round"/>`;
+  };
+  const hand = (hx, hy) => `<circle cx="${hx}" cy="${hy}" r="${.19 * r}" fill="#fff" stroke="${C.ink}" stroke-width="4"/>`;
+  let arms = '', front = '';
+  if (pose === 'stand') {
+    const sw2 = walk ? Math.sin(walk) * .15 * r : 0;
+    arms = arm(-1, -tw * 1.05 - sw2, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, tw * 1.05 + sw2, ty + 1.45 * r, tw * 1.2, ty + .8 * r);
+    front = hand(-tw * 1.05 - sw2, ty + 1.45 * r) + hand(tw * 1.05 + sw2, ty + 1.45 * r);
+  } else if (pose === 'box') {
+    const bw = 1.7 * r, bh = 1.0 * r, by = ty + .75 * r;
+    arms = arm(-1, -bw / 2 + 6, by + bh * .55, -tw * 1.15, ty + .9 * r) + arm(1, bw / 2 - 6, by + bh * .55, tw * 1.15, ty + .9 * r);
+    front = `<g><rect x="${-bw / 2}" y="${by}" width="${bw}" height="${bh}" rx="6" fill="#c99158" stroke="${C.ink}" stroke-width="4.5"/>
+      <rect x="${-bw / 2}" y="${by}" width="${bw}" height="${.2 * r}" fill="#b47d47" stroke="${C.ink}" stroke-width="4"/>
+      <rect x="${-.12 * r}" y="${by + .2 * r}" width="${.24 * r}" height="${bh - .2 * r}" fill="#e2b781" opacity=".8"/>
+      <path d="M${-bw * .3} ${by} l${-.1 * r} ${-.35 * r} l${.3 * r} ${.08 * r}z" fill="#3d7bff" stroke="${C.ink}" stroke-width="3"/>
+      <rect x="${bw * .08}" y="${by - .42 * r}" width="${.22 * r}" height="${.45 * r}" rx="4" fill="#59b36b" stroke="${C.ink}" stroke-width="3"/></g>` +
+      hand(-bw / 2 + 6, by + bh * .55) + hand(bw / 2 - 6, by + bh * .55);
+  } else if (pose === 'mug') {
+    arms = arm(-1, -tw * 1.05, ty + 1.45 * r, -tw * 1.2, ty + .8 * r) + arm(1, tw * .55, ty + .1 * r, tw * 1.35, ty + .9 * r);
+    front = hand(-tw * 1.05, ty + 1.45 * r) + mug(tw * .55 + .25 * r, ty - .05 * r, r * .9) + hand(tw * .55, ty + .1 * r);
+  } else if (pose === 'phone') {
+    arms = arm(-1, -.15 * r, ty + .35 * r, -tw * 1.1, ty + 1.2 * r) + arm(1, .3 * r, ty + .35 * r, tw * 1.1, ty + 1.2 * r);
+    front = '';
+  }
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${flip ? -sc : sc},${sc})">${legsS}${torso}${detail}${arms}
+    ${head({ ...o, x: 0, y: 0, flip: false })}${front}</g>`;
+}
+function mug(x, y, s = 60) {
+  return `<g transform="translate(${x},${y})"><path d="M${.28 * s} ${-.2 * s} q${.22 * s} 0 ${.22 * s} ${.2 * s} t${-.22 * s} ${.2 * s}" fill="none" stroke="${C.ink}" stroke-width="5"/>
+  <rect x="${-.3 * s}" y="${-.32 * s}" width="${.6 * s}" height="${.66 * s}" rx="6" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
+  <text x="0" y="${-.08 * s}" text-anchor="middle" font-family="Rubik" font-weight="900" font-size="${.15 * s}" fill="${C.red}">BEST</text>
+  <text x="0" y="${.1 * s}" text-anchor="middle" font-family="Rubik" font-weight="900" font-size="${.15 * s}" fill="${C.red}">BOSS</text></g>`;
+}
+
+// ===== scene furniture =====
+function bgGrad(top, bot) { const id = uid('g'); return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bot}"/></linearGradient></defs><rect x="-400" y="-400" width="${W + 800}" height="${H + 800}" fill="url(#${id})"/>`; }
+function stripesBG(t, a = '#1b1440', b = '#231a55') {
+  let s = `<rect x="-400" y="-400" width="1520" height="2080" fill="${a}"/>`;
+  const off = (t * 40) % 120;
+  for (let i = -20; i < 30; i++) s += `<rect x="${i * 120 + off - 400}" y="-400" width="50" height="2200" fill="${b}" transform="rotate(20 360 640)"/>`;
+  return s;
+}
+function desk(x, y, w, h = 300, top = '#b07447', front = '#8d5a36') {
+  return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${front}" stroke="${C.ink}" stroke-width="5"/>
+   <rect x="${x - 14}" y="${y - 26}" width="${w + 28}" height="34" rx="6" fill="${top}" stroke="${C.ink}" stroke-width="5"/></g>`;
+}
+function drawer(x, y, w = 150, h = 70) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#9c6640" stroke="${C.ink}" stroke-width="4"/><rect x="${x + w / 2 - 22}" y="${y + h / 2 - 5}" width="44" height="10" rx="5" fill="${C.ink}"/>`; }
+function monitor(x, y, w = 200, h = 140, t = 0) {
+  let cells = '';
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 4; c++) {
+    const on = (Math.floor(t * 6) + r * 3 + c) % 7 === 0;
+    cells += `<rect x="${x + 14 + c * (w - 28) / 4}" y="${y + 26 + r * (h - 40) / 5}" width="${(w - 28) / 4 - 4}" height="${(h - 40) / 5 - 4}" fill="${r === 0 ? '#2ea56a' : on ? '#bfe8cf' : '#e8f6ee'}"/>`;
+  }
+  return `<g><rect x="${x + w / 2 - 14}" y="${y + h}" width="28" height="30" fill="#55525e" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="${x + w / 2 - 50}" y="${y + h + 26}" width="100" height="14" rx="5" fill="#55525e" stroke="${C.ink}" stroke-width="4"/>
+   <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="#2b2833" stroke="${C.ink}" stroke-width="5"/>
+   <rect x="${x + 10}" y="${y + 10}" width="${w - 20}" height="${h - 20}" rx="4" fill="#f4fbf7"/>${cells}
+   <rect x="${x + w - 34}" y="${y - 8}" width="30" height="30" fill="${C.yel}" stroke="${C.ink}" stroke-width="3" transform="rotate(8 ${x + w - 19} ${y + 7})"/></g>`;
+}
+function coffeeCup(x, y, s = 1, t = 0) {
+  const st = [0, 1].map(i => `<path d="M${x - 8 + i * 16} ${y - 34} q8 -14 0 -26 q-8 -12 0 -24" fill="none" stroke="#9a96a6" stroke-width="4" stroke-linecap="round" opacity="${.4 + .3 * Math.sin(t * 4 + i)}" transform="translate(0 ${-((t * 14 + i * 9) % 10)})"/>`).join('');
+  return `<g transform="translate(${x},${y}) scale(${s}) translate(${-x},${-y})">${st}<path d="M${x - 22} ${y - 30} L${x - 17} ${y + 30} H${x + 17} L${x + 22} ${y - 30}Z" fill="#fff" stroke="${C.ink}" stroke-width="4"/><rect x="${x - 20}" y="${y - 10}" width="40" height="18" fill="#8d5a36"/><rect x="${x - 25}" y="${y - 38}" width="50" height="12" rx="4" fill="#5b3a26" stroke="${C.ink}" stroke-width="4"/></g>`;
+}
+function vignette(a = .35) { const id = uid('v'); return `<defs><radialGradient id="${id}" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${a}"/></radialGradient></defs><rect width="${W}" height="${H}" fill="url(#${id})"/>`; }
+function cam(content, { z = 1, cx = 360, cy = 640, rot = 0, sx = 0, sy = 0 } = {}) {
+  return `<g transform="translate(${360 + sx},${640 + sy}) rotate(${rot}) scale(${z}) translate(${-cx},${-cy})">${content}</g>`;
+}
+// speed-lines burst behind slammed words
+function burst(t, t0, x, y, col = '#fff', n = 14, R1 = 140, R2 = 330) {
+  const k = P(t, t0, .35); if (k <= 0 || k >= 1) return '';
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2 + i * .3, r1 = lerp(R1 * .6, R2, eOut(k)), r2 = r1 + 60 * (1 - k);
+    s += `<line x1="${x + Math.cos(a) * r1}" y1="${y + Math.sin(a) * r1}" x2="${x + Math.cos(a) * r2}" y2="${y + Math.sin(a) * r2}" stroke="${col}" stroke-width="${8 * (1 - k)}" stroke-linecap="round"/>`;
+  }
+  return s;
+}
